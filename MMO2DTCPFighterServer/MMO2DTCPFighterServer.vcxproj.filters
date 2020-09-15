@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="LogFolder">
+      <UniqueIdentifier>{f09d7844-ac93-40b9-bbf2-3d68a4a19e91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetworkFolder">
+      <UniqueIdentifier>{94b629a9-474b-49eb-a84c-6b7d1143d043}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ServerManagementFolder">
+      <UniqueIdentifier>{4fc48e65-1340-4078-a54d-9707332510d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ObjectFolder">
+      <UniqueIdentifier>{122f710a-af03-491f-a4a7-dd7fdf8489a3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MMO2DTCPFighterServer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>LogFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="NetProcFunction.cpp">
+      <Filter>NetworkFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="CRingBuffer.cpp">
+      <Filter>NetworkFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerControl.cpp">
+      <Filter>ServerManagementFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>NetworkFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="CExceptionObject.cpp">
+      <Filter>NetworkFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="CMessage.cpp">
+      <Filter>NetworkFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="Character.cpp">
+      <Filter>ObjectFolder</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>LogFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="NetProcFunction.h">
+      <Filter>NetworkFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="CRingBuffer.h">
+      <Filter>NetworkFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerControl.h">
+      <Filter>ServerManagementFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="MMO2DTCPFighterServer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>NetworkFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="CMessage.h">
+      <Filter>NetworkFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="CExceptionObject.h">
+      <Filter>NetworkFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="Character.h">
+      <Filter>ObjectFolder</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MMO2DTCPFighterServer.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
