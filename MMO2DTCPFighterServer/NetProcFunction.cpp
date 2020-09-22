@@ -5,25 +5,26 @@
 #include "CExceptionObject.h"
 #include "CMessage.h"
 #include "NetProcFunction.h"
+#include "Sector.h"
 #include "Character.h"
 
 SOCKET gListenSocket;
 
 std::unordered_map<SOCKET, stSession*> gSessionMap;
 
-
 // 새로운 세션을 생성,등록 한다.
 stSession* CreateSession(SOCKET socket)
 {
-	static DWORD sessionID;
+	static DWORD sessionID = 1;
 
 	stSession* pSession = FindSession(socket);
-	if (pSession == nullptr)
+	if (pSession != nullptr)
 	{
 		return nullptr;
 	}
 
 	pSession = (stSession*)malloc(sizeof(stSession));
+	new(pSession) stSession();
 
 	pSession->socket = socket;
 	pSession->sessionID = sessionID;
@@ -57,19 +58,33 @@ stSession* FindSession(SOCKET socket)
 void DisconnectSession(SOCKET socket)
 {
 	stSession* pSession = FindSession(socket);
-	if (pSession != nullptr)
+	if (pSession == nullptr)
 	{
-		gSessionMap.erase(socket);	
-		closesocket(socket);
-		free(pSession);
+		_LOG(eLogList::LOG_LEVEL_ERROR, L"DisconnectSession Error LINE : %d, FILE : %s", __LINE__, __FILEW__);
+		int* ptr = nullptr;
+		*ptr = -1;
 	}
+
+	gSessionMap.erase(socket);
+	closesocket(socket);
+	free(pSession);
 
 	return;
 }
 
 
+void DeleteClient(SOCKET socket)
+{		
+	stSession* pSession = gSessionMap.find(socket)->second;
 
-bool SetupNetwork(void)
+	DeleteCharacter(pSession->sessionID);
+
+	DisconnectSession(pSession->socket);
+}
+
+
+
+void SetupNetwork(void)
 {
 	int retval;
 
@@ -111,6 +126,17 @@ bool SetupNetwork(void)
 
 	}
 
+	// KeepAlive 옵션
+	BOOL enable = true;
+	retval = setsockopt(gListenSocket, SOL_SOCKET, SO_KEEPALIVE, (char*)&enable, sizeof(enable));
+	if (retval == SOCKET_ERROR)
+	{
+		_LOG(eLogList::LOG_LEVEL_ERROR, L"setsockopt Error, Error Code : %d\n", WSAGetLastError());
+
+		int* ptr = nullptr;
+		*ptr = -1;
+	}
+
 	// RST 옵션
 	linger optval;
 	optval.l_onoff = 1;
@@ -122,7 +148,6 @@ bool SetupNetwork(void)
 
 		int* ptr = nullptr;
 		*ptr = -1;
-
 	}
 
 	SOCKADDR_IN serverAddr;
@@ -158,11 +183,12 @@ bool SetupNetwork(void)
 
 void NetworkProcessing(void)
 {
+	// 64개씩 소켓 select
+	int socketCount = 0;
+
 	stSession* pSession;
 
 	SOCKET socketTable[FD_SETSIZE] = { INVALID_SOCKET };
-
-	int socketCount = 0;
 
 	FD_SET writeSet;
 	FD_SET readSet;
@@ -180,22 +206,23 @@ void NetworkProcessing(void)
 	for (auto sessionIter = gSessionMap.begin(); sessionIter != sessionIterE;)
 	{
 		pSession = sessionIter->second;
+	
+		// 하단 네트워크 로직에서 현재 sessionIter 값을 삭제할 수 있기 때문이다. 
+		++sessionIter;
 
 		socketTable[socketCount] = pSession->socket;
 
+		// 읽기 셋 셋팅
 		FD_SET(pSession->socket, &readSet);
 
+		// 쓰기 셋 셋팅
 		if (!pSession->sendQ.IsEmpty())
 		{
 			FD_SET(pSession->socket, &writeSet);
 		}
-
-		++socketCount;
 		
-		// 하단 네트워크 로직에서 현재 sessionIter 값을 삭제할 수 있기 때문이다. 
-		++sessionIter;
-
-
+		++socketCount;	
+		
 		if (socketCount >= FD_SETSIZE)
 		{
 			SelectSocket(socketTable, &writeSet, &readSet);
@@ -222,8 +249,9 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 {
 	int retval;
 
-	bool disconnectFlag = false;
+	bool disconnectFlag;
 
+	// select 타임아웃값 0으로 셋팅
 	timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;	
@@ -233,6 +261,7 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 	{
 		for (int count = 0; retval > 0 && count < FD_SETSIZE; ++count)
 		{
+			disconnectFlag = false;
 
 			if (FD_ISSET(pSocketTable[count], pWriteSet))
 			{	
@@ -256,7 +285,6 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 				}
 			}
 		}
-
 	}
 	else if (retval == SOCKET_ERROR)
 	{
@@ -290,7 +318,51 @@ void Accept()
 
 	gSessionMap.insert(std::pair<SOCKET, stSession*>(clientSocket, pSession));
 
-	// TODO : CreateCharacter 함수 만들기
+	auto testIter = gSessionMap.begin();
+
+	/*short posX = (rand() % 6000) + 200;
+	short posY = (rand() % 6000) + 200;*/
+
+	short posX = 500;
+	short posY = 500;
+
+	stCharacter* pCharacter = CreateCharacter(pSession, eKeyList::eACTION_STAND, eKeyList::eACTION_MOVE_RR, eKeyList::eACTION_STAND, posX, posY);
+	
+	gCharacterMap.insert(std::pair<DWORD, stCharacter*>(pSession->sessionID, pCharacter));
+
+	CMessage message;
+
+	PackingCreateCharacter(&message, pCharacter->sessionID, pCharacter->direction, posX, posY, pCharacter->hp);
+
+	SendProcUnicasting(pSession, &message);
+	
+	// 영향권에 client들에게 pCharacter 생성하라고 뿌리기
+	PackingCreateOtherCharacter(&message, pCharacter->sessionID, pCharacter->direction, posX, posY, pCharacter->hp);
+
+	SendProcAroundSector(pSession, &message);
+
+	
+	stSectorAround sectorAround;
+
+	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &sectorAround);
+
+	for (int count = 0; count < sectorAround.count; ++count)
+	{
+		auto sectorList = gSector[sectorAround.around[count].posY][sectorAround.around[count].posX];
+
+		auto iterE = sectorList.end();
+
+		for (auto iter = sectorList.begin(); iter != iterE; ++iter)
+		{
+			if (pCharacter != (*iter))
+			{
+				// 영향권 client를 생성하라고 pCharcter애게 유니캐스팅
+				PackingCreateOtherCharacter(&message, (*iter)->sessionID, (*iter)->direction, (*iter)->posX, (*iter)->posY, (*iter)->hp);
+
+				SendProcUnicasting(pSession, &message);
+			}
+		}
+	}	
 
 	return;
 }
@@ -318,9 +390,8 @@ void RecvEvent(SOCKET socket)
 	if (retval == SOCKET_ERROR || retval == 0)
 	{
 		_LOG(eLogList::LOG_LEVEL_ERROR, L"recv Eerror, Error Code : %d\n", WSAGetLastError());	
-		
-		DisconnectSession(socket);
-		//TODO : 캐릭터 삭제?	
+			
+		DeleteClient(socket);
 
 		return;
 	}
@@ -339,10 +410,9 @@ void RecvEvent(SOCKET socket)
 			}
 			else if (retval == -1)
 			{
+				// 내 잘못일 수도 그리고 client의 조작일 수도 있기 떄문에 끊기가 애매하다.
 				_LOG(eLogList::LOG_LEVEL_ERROR, L"DoCheckComplateMessage Eerror, Session ID : %d\n", pSession->sessionID);
 
-				int* ptr = nullptr;
-				*ptr = -1;
 				return;
 			}
 		}
@@ -372,7 +442,7 @@ bool SendEvent(SOCKET socket)
 	{
 		_LOG(eLogList::LOG_LEVEL_WARNING, L"recv Eerror, Error Code : %d\n", WSAGetLastError());
 
-		DisconnectSession(socket);
+		DeleteClient(socket);
 
 		return false;
 	}
@@ -422,7 +492,7 @@ int CheckComplateMessage(stSession* pSession)
 
 	CMessage message;
 
-	if (!pSession->recvQ.Dequeue((char*)&message, messageHeader.bySize))
+	if (!pSession->recvQ.Dequeue((char*)message.GetBufferPtr(), messageHeader.bySize))
 	{
 		_LOG(eLogList::LOG_LEVEL_ERROR, L"recvQ Size :%d \n", pSession->recvQ.GetUseSize());
 
@@ -435,11 +505,14 @@ int CheckComplateMessage(stSession* pSession)
 	{
 		if (!RecvMessageProcessing(pSession, messageHeader.byType, &message))
 		{
-			// 내 로직에 문제가 있었을 경우
+			// 내 로직에 문제가 있었을 경우도 있고, 조작될 수도 있는 경우	
+			_LOG(eLogList::LOG_LEVEL_ERROR, L"#RecvMessageProcessing# Session ID : %d \n", pSession->sessionID);
+
+
 			return -1;
 		}
 	}
-	catch (CExceptionObject& exception)
+	catch (CExceptionObject exception)
 	{
 		// 클라이언트의 실수나 클라이언트가 인위적으로 조작된 메시지를 보냈을 경우
 		_LOG(eLogList::LOG_LEVEL_ERROR, L"MessageProcessing Eerror, Session ID : %d\n", pSession->sessionID);
@@ -469,7 +542,6 @@ int CheckComplateMessage(stSession* pSession)
 }
 
 
-// TODO : MessageProcessing
 bool RecvMessageProcessing(stSession* pSession, BYTE messageType, CMessage* pMessage)
 {
 	switch(messageType)
@@ -512,40 +584,301 @@ bool RecvMessageProcessing(stSession* pSession, BYTE messageType, CMessage* pMes
 	return true;
 }
 
-// TODO : 메시지 프로세싱 함수 정의하기
 bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 {
-	BYTE direction;
+	BYTE moveDirection;
 	short posX;
 	short posY;
 	
-	*pMessage >> direction;
+	*pMessage >> moveDirection;
 	*pMessage >> posX;
 	*pMessage >> posY;
 
+	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTART # SessionID:%d / Direction:%d / X:%d / Y:%d",pSession->sessionID, moveDirection, posX, posY);
 
-	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTART # SessionID:%d / Direction:%d / X:%d / Y:%d",pSession->sessionID, direction, posX, posY);
+	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
+	if (pCharacter == nullptr)
+	{
+		_LOG(eLogList::LOG_LEVEL_ERROR, L"# MOVESTART # Character Not Found : %d\n", pSession->sessionID);
+
+		DisconnectSession(pSession->socket);
+		return false;
+	}
 
 
+	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
+	{
+		_LOG(eLogList::LOG_LEVEL_DEBUG, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d",
+			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
+		);
 
+		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
+
+		SendProcAroundSector(pSession, pMessage, true);
+		
+		posX = pCharacter->posX;
+		posY = pCharacter->posY;
+	}
+
+	pCharacter->action = moveDirection;
+	pCharacter->moveDirection = moveDirection;
+
+	switch (moveDirection)
+	{
+	case eKeyList::eACTION_MOVE_LL:
+
+	case eKeyList::eACTION_MOVE_LU:
+
+	case eKeyList::eACTION_MOVE_LD:
+
+		pCharacter->direction = eKeyList::eACTION_MOVE_LL;
+
+		break;
+	case eKeyList::eACTION_MOVE_RR:
+
+	case eKeyList::eACTION_MOVE_RU:
+
+	case eKeyList::eACTION_MOVE_RD:
+
+		pCharacter->direction = eKeyList::eACTION_MOVE_RR;
+
+		break;
+	}
+
+	// client의 좌표를 믿고 가고있음
+	pCharacter->posX = posX;
+	pCharacter->posY = posY;
+
+	if (UpdateSectorPosition(pCharacter))
+	{
+		// 섹터가 바뀌었다면은 SendUpdateCharacterSector로 브로드캐스팅
+		SendUpdateCharacterSector(pCharacter);
+		
+		return true;
+	}
+
+	PackingMoveStart(pMessage, pCharacter->sessionID, pCharacter->moveDirection, pCharacter->posX, pCharacter->posY);
+
+	// 섹터가 바뀌지 않았다면은 직접 패킷 만든 후 AroundSector로 브로드캐스팅
+	SendProcAroundSector(pSession, pMessage);
+
+	return true;
 }
 
 bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 {
+	unsigned char moveDirection;
+	short posX;
+	short posY;
 
+	*pMessage >> moveDirection;
+	*pMessage >> posX;
+	*pMessage >> posY;
+
+	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTOP # SessionID:%d / Direction:%d / X:%d / Y:%d", pSession->sessionID, moveDirection, posX, posY);
+
+	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
+	if (pCharacter == nullptr)
+	{
+		_LOG(eLogList::LOG_LEVEL_ERROR, L"# MOVESTOP # Character Not Found : %d\n", pSession->sessionID);
+
+		DisconnectSession(pSession->socket);
+		return false;
+	}
+
+	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
+	{
+		_LOG(eLogList::LOG_LEVEL_DEBUG, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d",
+			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
+		);
+
+		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
+
+		SendProcAroundSector(pSession, pMessage, true);
+		
+		posX = pCharacter->posX;
+		posY = pCharacter->posY;
+	}
+
+	pCharacter->posX = posX;
+	pCharacter->posY = posY;
+	pCharacter->direction = moveDirection;
+	pCharacter->action = eKeyList::eACTION_STAND;
+
+	if (UpdateSectorPosition(pCharacter))
+	{
+		// 섹터가 바뀌었다면은 SendUpdateCharacterSector로 브로드캐스팅
+		SendUpdateCharacterSector(pCharacter);
+
+	}
+
+	PackingMoveStop(pMessage, pCharacter->sessionID, pCharacter->direction, pCharacter->posX, pCharacter->posY);
+
+	SendProcAroundSector(pSession, pMessage);
+
+	return true;
 }
 
 bool Attack1MessageProcessing(stSession* pSession, CMessage* pMessage)
 {
 
+	return true;
 }
 
 bool Attack2MessageProcessing(stSession* pSession, CMessage* pMessage)
 {
 
+	return true;
 }
 
 bool Attack3MessageProcessing(stSession* pSession, CMessage* pMessage)
 {
 
+	return true;
+}
+
+
+void PackingCreateCharacter(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY, BYTE hp)
+{
+	stHeader messageHeader;
+
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.byType = dfPACKET_SC_CREATE_MY_CHARACTER;
+	messageHeader.bySize = sizeof(DWORD) + sizeof(BYTE) + sizeof(short) + sizeof(short) + sizeof(BYTE);
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << (unsigned char)direction << posX << posY << (unsigned char)hp;
+}
+
+void PackingDeleteCharacter(CMessage* pMessage, DWORD sessionID)
+{	
+	stHeader messageHeader;
+
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(DWORD);
+	messageHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID;
+}
+
+// 액션 부분 확인좀 해야할듯
+void PackingCreateOtherCharacter(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY, BYTE hp)
+{
+	stHeader messageHeader;
+
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(DWORD) + sizeof(BYTE) + sizeof(short) + sizeof(short) + sizeof(BYTE);
+	messageHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << (unsigned char)direction << posX << posY << (unsigned char)hp;
+}
+
+void PackingMoveStart(CMessage* pMessage, DWORD sessionID, BYTE moveDirection, short posX, short posY)
+{
+	stHeader messageHeader;
+
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(DWORD) + sizeof(BYTE) + sizeof(short) + sizeof(short);
+	messageHeader.byType = dfPACKET_SC_MOVE_START;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << (unsigned char)moveDirection << posX << posY;
+}
+
+
+void PackingMoveStop(CMessage* pMessage, DWORD sessionID, BYTE moveDirection, short posX, short posY)
+{
+	stHeader messageHeader;
+
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(DWORD) + sizeof(BYTE) + sizeof(short) + sizeof(short);
+	messageHeader.byType = dfPACKET_SC_MOVE_STOP;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << (unsigned char)moveDirection << posX << posY;
+}
+
+
+void PackingSynPosition(CMessage* pMessage, DWORD sessionID, short posX, short posY)
+{
+	stHeader messageHeader;
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(DWORD) + sizeof(short) + sizeof(short);
+	messageHeader.byType = dfPACKET_SC_SYNC;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << posX << posY;
+}
+
+
+void SendProcUnicasting(stSession* pSession, CMessage* pMessage)
+{
+	pSession->sendQ.Enqueue(pMessage->GetBufferPtr(), pMessage->GetDataSize());
+}
+
+
+void SendProcOneSector(int sectorPosX, int sectorPosY, stSession* pExceptSession, CMessage* pMessage)
+{
+	auto iterE = gSector[sectorPosY][sectorPosX].end();
+
+	for (auto iter = gSector[sectorPosY][sectorPosX].begin(); iter != iterE; ++iter)
+	{
+		if (pExceptSession != (*iter)->pSession)
+		{
+			SendProcUnicasting((*iter)->pSession, pMessage);
+		}
+	}
+}
+
+void SendProcAroundSector(stSession* pSession, CMessage* pMessage, bool sendMeFlag)
+{
+	stCharacter* pCharacter;
+
+	pCharacter = FindCharacter(pSession->sessionID);
+	if (pCharacter == nullptr)
+	{
+		_LOG(eLogList::LOG_LEVEL_ERROR,L"#SendProcAroundSector# Not Found Character SessionID : %d", pSession->sessionID);
+
+		return;
+	}
+
+	stSectorAround sectorAround;
+	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &sectorAround);
+
+	stSession* pExistSession = nullptr;
+	if (!sendMeFlag)
+	{
+		pExistSession = pSession;
+	}
+
+	for (int count = 0; count < sectorAround.count; ++count)
+	{	
+		SendProcOneSector(sectorAround.around[count].posX, sectorAround.around[count].posY, pExistSession, pMessage);
+	}
 }

@@ -25,6 +25,12 @@
     <Filter Include="ObjectFolder">
       <UniqueIdentifier>{122f710a-af03-491f-a4a7-dd7fdf8489a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UpdateFolder">
+      <UniqueIdentifier>{cbd097c6-9da5-4623-9b0d-d66a56972d4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SectorFolder">
+      <UniqueIdentifier>{c1ef5057-6f45-4e42-8a9c-e0ef0bd6da34}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MMO2DTCPFighterServer.cpp">
@@ -56,6 +62,15 @@
     </ClCompile>
     <ClCompile Include="Character.cpp">
       <Filter>ObjectFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="MainUpdate.cpp">
+      <Filter>UpdateFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="Sector.cpp">
+      <Filter>SectorFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="CFrameSkip.cpp">
+      <Filter>UpdateFolder</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +106,15 @@
     </ClInclude>
     <ClInclude Include="Character.h">
       <Filter>ObjectFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="MainUpdate.h">
+      <Filter>UpdateFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="Sector.h">
+      <Filter>SectorFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="CFrameSkip.h">
+      <Filter>UpdateFolder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

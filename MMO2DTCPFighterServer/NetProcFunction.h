@@ -22,12 +22,14 @@ stSession* FindSession(SOCKET socket);
 // 새로운 세션을 생성,등록 한다.
 stSession* CreateSession(SOCKET socket);
 
-// 해당 세션 종료처리.
-// 세션만 삭제하는 경우는 없다 차라리 DeleteClient로 해서 
-// 해당 세션 정보를 가진 클라이언트의 리소스를 모두 정리하는 것이 좋을 것 같다.
 void DisconnectSession(SOCKET socket);
 
-bool SetupNetwork(void);
+
+// DisconnectSession(), DeleteCharacter() 함수 랩핑
+void DeleteClient(SOCKET socket);
+
+
+void SetupNetwork(void);
 
 void NetworkProcessing(void);
 
@@ -42,9 +44,7 @@ bool SendEvent(SOCKET socket);
 // 0은 처리완료, 1은 처리 할 거 없음, -1 오류
 int CheckComplateMessage(stSession* pSession);
 
-
 bool RecvMessageProcessing(stSession* pSession, BYTE messageType, CMessage* pMessage);
-
 
 bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage);
 
@@ -55,3 +55,23 @@ bool Attack1MessageProcessing(stSession* pSession, CMessage* pMessage);
 bool Attack2MessageProcessing(stSession* pSession, CMessage* pMessage);
 
 bool Attack3MessageProcessing(stSession* pSession, CMessage* pMessage);
+
+
+void PackingCreateCharacter(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY, BYTE hp);
+
+void PackingDeleteCharacter(CMessage* pMessage, DWORD sessionID);
+
+void PackingCreateOtherCharacter(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY, BYTE hp);
+
+void PackingMoveStart(CMessage* pMessage, DWORD sessionID, BYTE moveDirection, short posX, short posY);
+
+void PackingMoveStop(CMessage* pMessage, DWORD sessionID, BYTE moveDirection, short posX, short posY);
+
+void PackingSynPosition(CMessage* pMessage, DWORD sessionID, short posX, short posY);
+
+
+void SendProcUnicasting(stSession* pSession, CMessage* pMessage);
+
+void SendProcOneSector(int sectorPosX, int sectorPosY, stSession* pExceptSession, CMessage* pMessage);
+
+void SendProcAroundSector(stSession* pSession, CMessage* pMessage, bool sendMeFlag = false);

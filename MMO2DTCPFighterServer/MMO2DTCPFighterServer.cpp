@@ -6,6 +6,9 @@
 #include "CExceptionObject.h"
 #include "CMessage.h"
 #include "NetProcFunction.h"
+#include "Sector.h"
+#include "Character.h"
+#include "MainUpdate.h"
 
 bool gShutdwonFlag = false;
 
@@ -13,6 +16,8 @@ int main()
 {
 
 	timeBeginPeriod(1);
+
+	srand((unsigned)time(NULL));
 
 	setlocale(LC_ALL, "");
 
@@ -25,8 +30,8 @@ int main()
 	{
 		NetworkProcessing();
 
-		// TODO : 컨텐츠 로직 파트
-
+		Update();
+		
 		ServerControling();
 	}
 	

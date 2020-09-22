@@ -80,7 +80,6 @@ struct stPacketCsMoveStart
 
 
 #define	dfPACKET_SC_MOVE_START					11
-
 struct stPacketScMoveStart
 {
 	DWORD dwID;
@@ -147,9 +146,6 @@ struct stPacketCsAttack2
 };
 
 
-
-
-
 #define	dfPACKET_SC_ATTACK2						23
 struct stPacketScAttack2
 {
@@ -168,9 +164,6 @@ struct stPacketCsAttack3
 	unsigned short usX;
 	unsigned short usY;
 };
-
-
-
 
 
 #define	dfPACKET_SC_ATTACK3						25

@@ -70,7 +70,6 @@ int CMessage::GetData(char* chpDest, int iSize)
 
 int CMessage::PutData(char* chpSrc, int iSize)
 {
-
 	memcpy(&this->m_buffer[this->rear + 1], chpSrc, iSize);
 
 	return iSize;

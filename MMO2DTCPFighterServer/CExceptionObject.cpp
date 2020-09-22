@@ -13,7 +13,5 @@ CExceptionObject::CExceptionObject(char* buffer, int bufferSize, const char* dat
 CExceptionObject::~CExceptionObject()
 {
 
-	delete[] this->m_MessageLog;
-	delete[] this->m_ErrorDataLog;
-
+	
 }

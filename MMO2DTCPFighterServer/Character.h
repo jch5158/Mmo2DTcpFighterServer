@@ -1,7 +1,7 @@
 #pragma once
 
 
-struct Character
+struct stCharacter
 {
 	stSession* pSession;
 	DWORD sessionID;
@@ -13,10 +13,18 @@ struct Character
 	short posX;
 	short posY;
 
+	stSectorPos oldSector;
+	stSectorPos curSector;
+
 	char hp;
 };
 
-extern std::unordered_map<DWORD, Character*> gCharacterMap;
+extern std::unordered_map<DWORD, stCharacter*> gCharacterMap;
 
+stCharacter* CreateCharacter(stSession* pSession, DWORD action, BYTE direction, BYTE moveDirection, short posX, short posY);
 
-Character* FindCharacter(DWORD sessionID);
+stCharacter* FindCharacter(DWORD sessionID);
+
+void DeleteCharacter(DWORD sessionID);
+
+bool CheckCharacterMove(short posX, short posY);

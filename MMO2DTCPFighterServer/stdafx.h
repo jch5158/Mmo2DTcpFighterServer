@@ -1,9 +1,18 @@
 #pragma once
 
+//---------------------------------------------------------------
+// 캐릭터 이동범위
+//---------------------------------------------------------------
 #define dfRANGE_MOVE_TOP	0
 #define dfRANGE_MOVE_LEFT	0
 #define dfRANGE_MOVE_RIGHT	6400
 #define dfRANGE_MOVE_BOTTOM	6400
+
+//---------------------------------------------------------------
+// 섹터 개수
+//---------------------------------------------------------------
+#define dfSECTOR_MAX_X	50
+#define dfSECTOR_MAX_Y  50
 
 //---------------------------------------------------------------
 // 공격범위.
@@ -45,6 +54,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <locale.h>
+#include <time.h>
 #include <unordered_map>
 #include <list>
 

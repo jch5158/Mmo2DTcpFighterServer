@@ -146,13 +146,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CExceptionObject.cpp" />
+    <ClCompile Include="CFrameSkip.cpp" />
     <ClCompile Include="CMessage.cpp" />
     <ClCompile Include="CRingBuffer.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="MainUpdate.cpp" />
     <ClCompile Include="MMO2DTCPFighterServer.cpp" />
     <ClCompile Include="NetProcFunction.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="Protocol.cpp" />
+    <ClCompile Include="Sector.cpp" />
     <ClCompile Include="ServerControl.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -163,14 +166,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CExceptionObject.h" />
+    <ClInclude Include="CFrameSkip.h" />
     <ClInclude Include="CMessage.h" />
     <ClInclude Include="CRingBuffer.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="MainUpdate.h" />
     <ClInclude Include="MMO2DTCPFighterServer.h" />
     <ClInclude Include="NetProcFunction.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Sector.h" />
     <ClInclude Include="ServerControl.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

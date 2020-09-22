@@ -13,7 +13,7 @@ CRingBuffer::CRingBuffer(int queueLen)
 
 CRingBuffer::~CRingBuffer(void)
 {
-	//	delete[] this->mRingBuffer;
+	delete[] this->mRingBuffer;
 }
 
 bool CRingBuffer::IsEmpty(void)
