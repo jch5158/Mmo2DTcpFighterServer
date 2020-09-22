@@ -20,8 +20,6 @@ void Update()
 	}
 
 
-	gFrame.FrameCheck();
-
 
 	stCharacter* pCharecter = nullptr;
 

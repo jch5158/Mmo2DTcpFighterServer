@@ -601,7 +601,7 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 	*pMessage >> posX;
 	*pMessage >> posY;
 
-	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTART # SessionID:%d / Direction:%d / X:%d / Y:%d",pSession->sessionID, moveDirection, posX, posY);
+	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTART # SessionID:%d / Direction:%d / X:%d / Y:%d \n",pSession->sessionID, moveDirection, posX, posY);
 
 	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)
@@ -682,7 +682,7 @@ bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 	*pMessage >> posX;
 	*pMessage >> posY;
 
-	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTOP # SessionID:%d / Direction:%d / X:%d / Y:%d", pSession->sessionID, moveDirection, posX, posY);
+	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTOP # SessionID:%d / Direction:%d / X:%d / Y:%d \n", pSession->sessionID, moveDirection, posX, posY);
 
 	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)

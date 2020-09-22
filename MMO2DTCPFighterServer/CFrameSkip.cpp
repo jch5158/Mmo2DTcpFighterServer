@@ -22,6 +22,10 @@ bool CFrameSkip::FrameSkip()
 {
 	static DWORD oldTime = timeGetTime();
 
+	static DWORD timeCheck = timeGetTime();
+
+	static DWORD framCheck = 0;
+
 	DWORD nowTime = timeGetTime();
 
 	mSupplementTime += nowTime - oldTime;
@@ -31,7 +35,21 @@ bool CFrameSkip::FrameSkip()
 	if (mSupplementTime >= mMaxFPS)
 	{
 		mSupplementTime -= mMaxFPS;
-		
+
+		framCheck += 1;
+
+		if (nowTime - timeCheck >= 1000)
+		{
+			if (framCheck != 25)
+			{
+				_LOG(eLogList::LOG_LEVEL_DEBUG, L"frame : %d\n", framCheck);
+			}
+
+			timeCheck = nowTime;
+
+			framCheck = 0;
+		}	
+
 		return true;
 	}
 
