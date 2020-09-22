@@ -25,6 +25,6 @@ stCharacter* CreateCharacter(stSession* pSession, DWORD action, BYTE direction, 
 
 stCharacter* FindCharacter(DWORD sessionID);
 
-void DeleteCharacter(DWORD sessionID);
+void DeleteCharacter(stSession* pSession);
 
 bool CheckCharacterMove(short posX, short posY);

@@ -75,9 +75,16 @@ void DisconnectSession(SOCKET socket)
 
 void DeleteClient(SOCKET socket)
 {		
-	stSession* pSession = gSessionMap.find(socket)->second;
+	stSession* pSession = FindSession(socket);
+	if (pSession == nullptr)
+	{
+		_LOG(eLogList::LOG_LEVEL_ERROR,L"DeleteClient Error");
+		int* ptr = nullptr;
+		*ptr = -1;
+	}
 
-	DeleteCharacter(pSession->sessionID);
+
+	DeleteCharacter(pSession);
 
 	DisconnectSession(pSession->socket);
 }

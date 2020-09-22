@@ -18,6 +18,8 @@ extern std::list<stCharacter*> gSector[dfSECTOR_MAX_Y][dfSECTOR_MAX_X];
 
 void SetSectorPosition(stCharacter* pCharacter, stSectorPos* pSectorPos);
 
+void RemoveSectorPosition(stCharacter* pCharacter);
+
 // 현재 섹터 위치를 기준으로 pCharacter를 gSector 에 추가
 void AddCurCharacterSector(stCharacter* pCharacter);
 

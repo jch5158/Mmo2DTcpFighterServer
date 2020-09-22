@@ -58,9 +58,9 @@ stCharacter* FindCharacter(DWORD sessionID)
 
 
 
-void DeleteCharacter(DWORD sessionID)
+void DeleteCharacter(stSession* pSession)
 {
-	stCharacter* pCharacter = FindCharacter(sessionID);
+	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)
 	{
 		_LOG(eLogList::LOG_LEVEL_ERROR, L"DeleteCharacter Error LINE : %d, FILE : %s", __LINE__, __FILEW__);
@@ -68,7 +68,15 @@ void DeleteCharacter(DWORD sessionID)
 		*ptr = -1;
 	}
 
-	gCharacterMap.erase(sessionID);
+	CMessage message;
+
+	PackingDeleteCharacter(&message, pSession->sessionID);
+
+	SendProcAroundSector(pSession, &message);
+
+	RemoveSectorPosition(pCharacter);
+
+	gCharacterMap.erase(pSession->sessionID);
 
 	free(pCharacter);
 }

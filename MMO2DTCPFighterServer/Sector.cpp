@@ -16,6 +16,13 @@ void SetSectorPosition(stCharacter* pCharacter, stSectorPos* pSectorPos)
 	pSectorPos->posY = pCharacter->posY / (dfRANGE_MOVE_BOTTOM / dfSECTOR_MAX_Y);			
 }
 
+
+void RemoveSectorPosition(stCharacter* pCharacter)
+{
+	gSector[pCharacter->curSector.posY][pCharacter->curSector.posX].remove(pCharacter);
+
+}
+
 void AddCurCharacterSector(stCharacter* pCharacter)
 {
 	gSector[pCharacter->curSector.posY][pCharacter->curSector.posX].push_back(pCharacter);
