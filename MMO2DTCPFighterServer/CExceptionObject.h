@@ -9,7 +9,6 @@ public:
 
 	~CExceptionObject();
 
-
 	int m_BufferSize;
 
 	char m_MessageLog[200];

@@ -24,6 +24,8 @@ stSession* CreateSession(SOCKET socket)
 	}
 
 	pSession = (stSession*)malloc(sizeof(stSession));
+
+	// 링버퍼 생성자 호출을 위한 placement new
 	new(pSession) stSession();
 
 	pSession->socket = socket;
@@ -58,9 +60,11 @@ stSession* FindSession(SOCKET socket)
 void DisconnectSession(SOCKET socket)
 {
 	stSession* pSession = FindSession(socket);
+
+	// Accept에서 stSession, stChracter를 다 등록하는데, Disconnect에서 찾을 수 없다면은 내 로직의 문제이다.
 	if (pSession == nullptr)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"DisconnectSession Error LINE : %d, FILE : %s", __LINE__, __FILEW__);
+		_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"DisconnectSession Error LINE : %d, FILE : %s", __LINE__, __FILEW__);
 		int* ptr = nullptr;
 		*ptr = -1;
 	}
@@ -76,9 +80,11 @@ void DisconnectSession(SOCKET socket)
 void DeleteClient(SOCKET socket)
 {		
 	stSession* pSession = FindSession(socket);
+
+	// Accept에서 stSession, stChracter를 다 등록하는데, Disconnect에서 찾을 수 없다면은 내 로직의 문제이다.
 	if (pSession == nullptr)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR,L"DeleteClient Error");
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"DeleteClient Error");
 		int* ptr = nullptr;
 		*ptr = -1;
 	}
@@ -102,7 +108,7 @@ void SetupNetwork(void)
 	{
 		wprintf_s(L"WSAStartup error %d\n", WSAGetLastError());
 
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"WSAStartup Error, Error Code : %d\n", WSAGetLastError());
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"WSAStartup Error, Error Code : %d\n", WSAGetLastError());
 
 		int* ptr = nullptr;
 		*ptr = -1;
@@ -114,7 +120,7 @@ void SetupNetwork(void)
 	{
 		wprintf_s(L"socket error %d\n", WSAGetLastError());
 
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"Socket Error, Error Code : %d\n", WSAGetLastError());
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Socket Error, Error Code : %d\n", WSAGetLastError());
 
 		int* ptr = nullptr;
 		*ptr = -1;
@@ -126,7 +132,7 @@ void SetupNetwork(void)
 	retval = ioctlsocket(gListenSocket, FIONBIO, &on);
 	if (retval == SOCKET_ERROR)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"ioctlsocket Error, Error Code : %d\n", WSAGetLastError());
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"ioctlsocket Error, Error Code : %d\n", WSAGetLastError());
 
 		int* ptr = nullptr;
 		*ptr = -1;
@@ -138,7 +144,7 @@ void SetupNetwork(void)
 	retval = setsockopt(gListenSocket, SOL_SOCKET, SO_KEEPALIVE, (char*)&enable, sizeof(enable));
 	if (retval == SOCKET_ERROR)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"setsockopt Error, Error Code : %d\n", WSAGetLastError());
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"setsockopt Error, Error Code : %d\n", WSAGetLastError());
 
 		int* ptr = nullptr;
 		*ptr = -1;
@@ -151,7 +157,7 @@ void SetupNetwork(void)
 	retval = setsockopt(gListenSocket, SOL_SOCKET, SO_LINGER, (char*)&optval, sizeof(optval));
 	if (retval == SOCKET_ERROR)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"setsockopt Error, Error Code : %d\n", WSAGetLastError());
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"setsockopt Error, Error Code : %d\n", WSAGetLastError());
 
 		int* ptr = nullptr;
 		*ptr = -1;
@@ -166,7 +172,7 @@ void SetupNetwork(void)
 	retval = bind(gListenSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 	if (retval == SOCKET_ERROR)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"bind Error, Error Code : %d\n", WSAGetLastError());
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"bind Error, Error Code : %d\n", WSAGetLastError());
 
 		int* ptr = nullptr;
 		*ptr = -1;
@@ -175,14 +181,11 @@ void SetupNetwork(void)
 
 	retval = listen(gListenSocket, SOMAXCONN);
 	if (retval == SOCKET_ERROR)
-	{
-		wprintf_s(L"listen error : %d\n", WSAGetLastError());
-		
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"listen Error, Error Code : %d\n", WSAGetLastError());
+	{	
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"listen Error, Error Code : %d\n", WSAGetLastError());
 
 		int* ptr = nullptr;
 		*ptr = -1;
-
 	}
 
 	return;
@@ -203,10 +206,11 @@ void NetworkProcessing(void)
 	FD_ZERO(&writeSet);
 	FD_ZERO(&readSet);
 
+	// gListenSocket으로 Accept를 받기 위해 미리 readSet에 셋팅해둔다.
 	FD_SET(gListenSocket, &readSet);
 	socketTable[socketCount] = gListenSocket;
-
 	++socketCount;
+
 
 	auto sessionIterE = gSessionMap.end();
 
@@ -214,37 +218,41 @@ void NetworkProcessing(void)
 	{
 		pSession = sessionIter->second;
 	
-		// 하단 네트워크 로직에서 현재 sessionIter 값을 삭제할 수 있기 때문이다. 
+		// 하단 네트워크 로직에서 현재 sessionIter 값을 삭제할 수 있기 때문이다. 미리 다음 iterator로 옮긴다.
 		++sessionIter;
 
 		socketTable[socketCount] = pSession->socket;
 
-		// 읽기 셋 셋팅
-		FD_SET(pSession->socket, &readSet);
-
-		// 쓰기 셋 셋팅
+		// sendQ에 보낼게 있을 경우 쓰기 셋 셋팅
 		if (!pSession->sendQ.IsEmpty())
 		{
 			FD_SET(pSession->socket, &writeSet);
 		}
+
+		// 읽기 셋 셋팅
+		FD_SET(pSession->socket, &readSet);
+	
 		
 		++socketCount;	
 		
+		// select는 소켓을 64개씩 끊어서 처리하기 대문에 socketCount가 64개일 경우 SelectSocket을 실행
 		if (socketCount >= FD_SETSIZE)
 		{
 			SelectSocket(socketTable, &writeSet, &readSet);
 
+			// 다음 소켓들을 처리하기 위해 writeSet, readSet, socketTable을 초기화한다.
 			FD_ZERO(&writeSet);
 			FD_ZERO(&readSet);
-
 			memset(socketTable, INVALID_SOCKET, sizeof(SOCKET) * FD_SETSIZE);
 
+			// 매 Select마다 Accept가 들어오면 처리하기 위해 gListenSocket을 셋팅한다.
 			FD_SET(gListenSocket, &readSet);
 			socketTable[0] = gListenSocket;
 			socketCount = 1;
 		}
 	}
 
+	// socketTable에 64개 미만의 소켓이 아직 남아있을 수 있기 때문에 SelectSocket을 다시 호출한다.
 	if (socketCount > 0)
 	{
 		SelectSocket(socketTable, &writeSet, &readSet);
@@ -258,7 +266,7 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 
 	bool disconnectFlag;
 
-	// select 타임아웃값 0으로 셋팅
+	// select의 block을 없애기 위해 타임아웃값 0으로 셋팅
 	timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;	
@@ -266,6 +274,8 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 	retval = select(0, pReadSet, pWriteSet, nullptr, &timeout);
 	if (retval > 0)
 	{
+
+		// retval은 반응온 소켓의 수로 SendEvent, Accept, RecvEvent 호출 시 마다 retval 을 1씩 감소시킨다.
 		for (int count = 0; retval > 0 && count < FD_SETSIZE; ++count)
 		{
 			disconnectFlag = false;
@@ -273,6 +283,9 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 			if (FD_ISSET(pSocketTable[count], pWriteSet))
 			{	
 				--retval;
+
+				// SendEvent의 return 값이 true일 경우 이번 소켓은 끊어졌다고 판단한다.
+				// 그러면 아래의 RecvEvent는 반응이 온것과 상관없이 실행하지 않는다.
 				disconnectFlag = SendEvent(pSocketTable[count]);
 			}
 
@@ -295,7 +308,8 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 	}
 	else if (retval == SOCKET_ERROR)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"Select Socket Error, Error Code : %d\n", WSAGetLastError());
+		// Select에서 Error가 발생됐을 경우
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Select Socket Error, Error Code : %d\n", WSAGetLastError());
 	}
 }
 
@@ -310,7 +324,7 @@ void Accept()
 	clientSocket = accept(gListenSocket, (SOCKADDR*)&clientAddr, &addrLength);
 	if (clientSocket == INVALID_SOCKET)
 	{
-		_LOG(eLogList::LOG_LEVEL_WARNING, L"Accept Error, Error Code : %d\n", WSAGetLastError());
+		_LOG(TRUE, eLogList::LOG_LEVEL_WARNING, L"Accept Error, Error Code : %d\n", WSAGetLastError());
 		return;
 	}
 
@@ -318,14 +332,14 @@ void Accept()
 	if (pSession == nullptr)
 	{
 		// 중복 세션일 경우 내가 세션 정리를 안 했을 확률이 높다.
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"Accept 중복 세션, LINE : %d, FILE : %s\n", __LINE__, __FILEW__);
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Accept 중복 세션, LINE : %d, FILE : %s\n", __LINE__, __FILEW__);
 		int* ptr = nullptr;
 		*ptr = -1;
 	}
 
 	gSessionMap.insert(std::pair<SOCKET, stSession*>(clientSocket, pSession));
 
-	auto testIter = gSessionMap.begin();
+	//auto testIter = gSessionMap.begin();
 
 	/*short posX = (rand() % 6000) + 200;
 	short posY = (rand() % 6000) + 200;*/
@@ -334,24 +348,37 @@ void Accept()
 	short posY = 500;
 
 	stCharacter* pCharacter = CreateCharacter(pSession, eKeyList::eACTION_STAND, eKeyList::eACTION_MOVE_RR, eKeyList::eACTION_STAND, posX, posY);
-	
+	if (pCharacter == nullptr)
+	{
+		// 중복 세션일 경우 내가 세션 정리를 안 했을 확률이 높다.
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Accept 중복 캐릭터 생성요청 sessionID : %d, LINE : %d, FILE : %s\n", pSession->sessionID,__LINE__, __FILEW__);
+		int* ptr = nullptr;
+		*ptr = -1;
+	}
+
+
 	gCharacterMap.insert(std::pair<DWORD, stCharacter*>(pSession->sessionID, pCharacter));
 
 	CMessage message;
 
+	// pCharacter 생성메시지 만들기
 	PackingCreateCharacter(&message, pCharacter->sessionID, pCharacter->direction, posX, posY, pCharacter->hp);
 
+	// pSession에 pCharacter 생성메시지 유니캐스팅
 	SendProcUnicasting(pSession, &message);
 	
-	// 영향권에 client들에게 pCharacter 생성하라고 뿌리기
+	// pCharacter 만들라고 뿌리기
 	PackingCreateOtherCharacter(&message, pCharacter->sessionID, pCharacter->direction, posX, posY, pCharacter->hp);
 
+	// pSession 영향권 client들에게 pCharacter 생성하라고 뿌리기
 	SendProcAroundSector(pSession, &message);
-
 	
-	stSectorAround sectorAround;
 
+	stSectorAround sectorAround;
+	
+	// pCharacter 영향권 섹터 stSectorAround에 셋팅하기
 	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &sectorAround);
+
 
 	for (int count = 0; count < sectorAround.count; ++count)
 	{
@@ -371,6 +398,9 @@ void Accept()
 		}
 	}	
 
+	_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Accept 완료 sessionID : %d\n", pSession->sessionID);
+
+
 	return;
 }
 
@@ -380,15 +410,17 @@ void RecvEvent(SOCKET socket)
 {
 	int retval;
 
+	// session 을 찾지 못했다면 내 로직이 실수한거다.
 	stSession* pSession = FindSession(socket);
 	if (pSession == nullptr)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"Recv Find Session Eerror, LINE : %d, FILE : %s\n", __LINE__, __FILEW__);
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Recv Find Session Eerror, LINE : %d, FILE : %s\n", __LINE__, __FILEW__);
 		
 		int* ptr = nullptr;
 		*ptr = -1;
 	}
 
+	// recv 타임을 갱신한다. recv가 계속 오지 않는다면 client를 끊는다.
 	pSession->lastRecvTime = timeGetTime();
 
 	int directBufferSize = pSession->recvQ.DirectEnqueueSize();
@@ -396,21 +428,27 @@ void RecvEvent(SOCKET socket)
 	retval = recv(pSession->socket, pSession->recvQ.GetRearBufferPtr(), directBufferSize, 0);
 	if (retval == SOCKET_ERROR || retval == 0)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"recv Eerror, Error Code : %d\n", WSAGetLastError());	
+		// 클라이언트가 끊었거나 recv 에러이다.
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"recv Eerror, Error Code : %d\n", WSAGetLastError());	
 			
+		// session과 client를 정리한다.
 		DeleteClient(socket);
 
 		return;
 	}
 
+	// recv 값이 0 이상일 경우 메시지를 받은 게 있기 때문에 아래 로직을 실행한다.
 	if (retval > 0)
 	{
+		// GetRearBufferPtr로 데이터를 복사했기 때문에 rear를 옮겨준다.
 		pSession->recvQ.MoveRear(retval);
 
 		while (1)
 		{
+			// 메시지가 완성되었는지 확인하고 완성되었다면 메시지를 처리한다.
 			retval = CheckComplateMessage(pSession);
 
+			// 더 이상 처리할 메시지가 없을 경우 break로 반복문을 빠져 나간다.
 			if (retval == 1)
 			{
 				break;
@@ -418,7 +456,7 @@ void RecvEvent(SOCKET socket)
 			else if (retval == -1)
 			{
 				// 내 잘못일 수도 그리고 client의 조작일 수도 있기 떄문에 끊기가 애매하다.
-				_LOG(eLogList::LOG_LEVEL_ERROR, L"DoCheckComplateMessage Eerror, Session ID : %d\n", pSession->sessionID);
+				_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"DoCheckComplateMessage Eerror, Session ID : %d\n", pSession->sessionID);
 
 				return;
 			}
@@ -434,7 +472,8 @@ bool SendEvent(SOCKET socket)
 	stSession* pSession = FindSession(socket);
 	if (pSession == nullptr)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"Send Find Session Eerror, LINE : %d, FILE : %s\n", __LINE__, __FILEW__);
+		// 보낼 메시지가 있는데 FindSession에서 찾을 수 없다면 로직이 잘못된다.
+		_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"Send Find Session Eerror, LINE : %d, FILE : %s\n", __LINE__, __FILEW__);
 
 		int* ptr = nullptr;
 		*ptr = -1;
@@ -447,7 +486,8 @@ bool SendEvent(SOCKET socket)
 	retval = send(socket, pSession->sendQ.GetFrontBufferPtr(), directBufferSize, 0);
 	if (retval == SOCKET_ERROR)
 	{
-		_LOG(eLogList::LOG_LEVEL_WARNING, L"recv Eerror, Error Code : %d\n", WSAGetLastError());
+		// retval 이 SOCKET_ERROR일 경우 송신버퍼가 꽉 찼거나 클라이언트가 끊겼다고 판단하여 귾는다.
+		_LOG(TRUE,eLogList::LOG_LEVEL_WARNING, L"recv Eerror, Error Code : %d\n", WSAGetLastError());
 
 		DeleteClient(socket);
 
@@ -467,29 +507,36 @@ int CheckComplateMessage(stSession* pSession)
 
 	int recvSize = pSession->recvQ.GetUseSize();
 
+	// 수신 링 버퍼에 있는 데이터가 적어도 패킷 헤더 사이즈만큼 있는지 확인한다.
 	if (sizeof(stHeader) > recvSize)
 	{
 		return 1;
 	}
 
+	// 헤더 사이즈만큼 있을 경우 헤더 사이즈만큼 Peek하여 헤더 내용을 확인한다.
 	stHeader messageHeader;
 	retval = pSession->recvQ.Peek((char*)&messageHeader, sizeof(stHeader));
 	if(retval != sizeof(stHeader))
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"Peek Eerror, retval : %d, GetUseSize : %d \n", retval, pSession->recvQ.GetUseSize());
-		return -1;
+		// 이전 로직에서 헤더 사이즈를 확인하고 Peek하였는데 retval 크기가 헤더사이즈와 다를 경우 내 링버퍼에 문제다.
+		_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"stHeader Peek Eerror, retval : %d, GetUseSize : %d \n", retval, pSession->recvQ.GetUseSize());
+	
+		int* ptr = nullptr;
+		*ptr = -1;
 	}
 
 	// 패킷 코드가 일치하지 않으면은 조작된 정보이다.
 	if (messageHeader.byCode != dfNETWORK_PACKET_CODE)
 	{
-		_LOG(eLogList::LOG_LEVEL_WARNING, L"Packet Code : %d, Session ID : %d \n", messageHeader.byCode, pSession->sessionID);
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Packet Code : %d, Session ID : %d \n", messageHeader.byCode, pSession->sessionID);
+		
+		// Accept() 로직으로 인해서 무조건 클라이언트 캐릭터가 존재하기 때문에 DeleteClient() 함수로 세션과 캐릭터 정보를 정리한다.
+		DeleteClient(pSession->socket);
 
-		DisconnectSession(pSession->socket);
-
-		return 1;
+		return -1;
 	}
 
+	// 링버퍼 사이즈가 메시지 크기보다 작을 경우 다음 recv에 처리하기 위해 return 한다.
 	if (sizeof(stHeader) + messageHeader.bySize > recvSize)
 	{
 		return 1;
@@ -501,11 +548,14 @@ int CheckComplateMessage(stSession* pSession)
 
 	if (!pSession->recvQ.Dequeue((char*)message.GetBufferPtr(), messageHeader.bySize))
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"recvQ Size :%d \n", pSession->recvQ.GetUseSize());
+		// 내 링버퍼의 문제가 있을 경우이다.
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"recvQ Size :%d \n", pSession->recvQ.GetUseSize());
 
-		return -1;
+		int* ptr = nullptr;
+		*ptr = -1;
 	}
 
+	// 메시지에 buffer 포인터로 직접 넣었기 때문에 읽은 크기만큼 message의 rear를 옮겨준다.
 	message.MoveWritePos(messageHeader.bySize);
 
 	try
@@ -513,8 +563,7 @@ int CheckComplateMessage(stSession* pSession)
 		if (!RecvMessageProcessing(pSession, messageHeader.byType, &message))
 		{
 			// 내 로직에 문제가 있었을 경우도 있고, 조작될 수도 있는 경우	
-			_LOG(eLogList::LOG_LEVEL_ERROR, L"#RecvMessageProcessing# Session ID : %d \n", pSession->sessionID);
-
+			_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"#RecvMessageProcessing# Session ID : %d \n", pSession->sessionID);
 
 			return -1;
 		}
@@ -522,7 +571,7 @@ int CheckComplateMessage(stSession* pSession)
 	catch (CExceptionObject exception)
 	{
 		// 클라이언트의 실수나 클라이언트가 인위적으로 조작된 메시지를 보냈을 경우
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"MessageProcessing Eerror, Session ID : %d\n", pSession->sessionID);
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"MessageProcessing Eerror, Session ID : %d\n", pSession->sessionID);
 
 		FILE* fp;
 
@@ -542,7 +591,7 @@ int CheckComplateMessage(stSession* pSession)
 		
 		fclose(fp);
 
-		return 1;
+		return -1;
 	}
 
 	return 0;
@@ -580,15 +629,15 @@ bool RecvMessageProcessing(stSession* pSession, BYTE messageType, CMessage* pMes
 		break;
 	default:
 
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"unknown type, type : %d, Session ID : %d\n", messageType, pSession->sessionID);
+		_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"unknown type, type : %d, Session ID : %d\n", messageType, pSession->sessionID);
 
-		DisconnectSession(pSession->socket);
+		DeleteClient(pSession->socket);
 
 		break;
 	}
 
 	// default 같은 경우는 사용자가 조작된 패킷을 보냈다는 의미이다.
-	return true;
+	return false;
 }
 
 bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
@@ -601,21 +650,24 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 	*pMessage >> posX;
 	*pMessage >> posY;
 
-	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTART # SessionID:%d / Direction:%d / X:%d / Y:%d \n",pSession->sessionID, moveDirection, posX, posY);
+	_LOG(FALSE,eLogList::LOG_LEVEL_DEBUG, L"# MOVESTART # SessionID:%d / Direction:%d / X:%d / Y:%d \n",pSession->sessionID, moveDirection, posX, posY);
 
 	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"# MOVESTART # Character Not Found : %d\n", pSession->sessionID);
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"# MOVESTART # Character Not Found : %d\n", pSession->sessionID);
 
 		DisconnectSession(pSession->socket);
-		return false;
+		
+		int* ptr = nullptr;
+
+		*ptr = -1;
 	}
 
 
 	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
 	{
-		_LOG(eLogList::LOG_LEVEL_DEBUG, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d",
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d",
 			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
 		);
 
@@ -682,20 +734,24 @@ bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 	*pMessage >> posX;
 	*pMessage >> posY;
 
-	_LOG(eLogList::LOG_LEVEL_DEBUG, L"# MOVESTOP # SessionID:%d / Direction:%d / X:%d / Y:%d \n", pSession->sessionID, moveDirection, posX, posY);
+	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"# MOVESTOP # SessionID:%d / Direction:%d / X:%d / Y:%d \n", pSession->sessionID, moveDirection, posX, posY);
 
 	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR, L"# MOVESTOP # Character Not Found : %d\n", pSession->sessionID);
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"# MOVESTOP # Character Not Found : %d\n", pSession->sessionID);
 
 		DisconnectSession(pSession->socket);
+		
+		int* ptr = nullptr;
+		*ptr = -1;
+
 		return false;
 	}
 
 	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
 	{
-		_LOG(eLogList::LOG_LEVEL_DEBUG, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d",
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d",
 			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
 		);
 
@@ -870,16 +926,26 @@ void SendProcAroundSector(stSession* pSession, CMessage* pMessage, bool sendMeFl
 	pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)
 	{
-		_LOG(eLogList::LOG_LEVEL_ERROR,L"#SendProcAroundSector# Not Found Character SessionID : %d", pSession->sessionID);
+		// 캐릭터를 못찾을리가 없음 내 로직의 문제임.
+		// 조작된 클라이언트라고 해도 Accept쪽에서 처리해버림
+		_LOG(TRUE,eLogList::LOG_LEVEL_ERROR,L"#SendProcAroundSector# Not Found Character SessionID : %d", pSession->sessionID);
 
-		return;
+		int* ptr = nullptr;
+
+		*ptr = -1;
 	}
 
 	stSectorAround sectorAround;
 	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &sectorAround);
 
-	stSession* pExistSession = nullptr;
-	if (!sendMeFlag)
+	stSession* pExistSession;
+
+	// sendMeFlag 가 true일 경우 나한테도 메시지를 보낸다.
+	if (sendMeFlag)
+	{
+		pExistSession = nullptr;
+	}
+	else
 	{
 		pExistSession = pSession;
 	}

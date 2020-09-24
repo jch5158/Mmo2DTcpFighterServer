@@ -5,9 +5,9 @@ int gLogLevel;
 
 WCHAR gLogBuffer[1024];
 
-void DoPrintLog(int logLevel, WCHAR* logBuffer)
+void DoPrintLog(bool filePrintFlag, int logLevel, WCHAR* logBuffer)
 {	
-	FILE* fp;
+	FILE* fp = nullptr;
 
 	static WCHAR logInfo[500];
 
@@ -23,30 +23,34 @@ void DoPrintLog(int logLevel, WCHAR* logBuffer)
 	{
 	case eLogList::LOG_LEVEL_DEBUG:
 
-		fopen_s(&fp, "LogData.txt", "a+t");
-
+		_wfopen_s(&fp, L"LogData.txt", L"a+t");
+	
 		wsprintf(logInfo, L"[%02d/%02d/%02d %02d:%02d:%02d][dfLOG_LEVEL_DEBUG] ", stTm.tm_year + 1900, stTm.tm_mon + 1, stTm.tm_mday, stTm.tm_hour, stTm.tm_min, stTm.tm_sec);
-
-		fwrite(logInfo, (wcslen(logInfo) * 2) + sizeof(WCHAR), 1, fp);
-
-		fwrite(logBuffer, (wcslen(logBuffer) * 2) + sizeof(WCHAR), 1, fp);
+		
+		if (filePrintFlag)
+		{
+			fwprintf_s(fp, logInfo);
+			fwprintf_s(fp, logBuffer);
+		}
 
 		wprintf_s(L"%s", logInfo);
 		wprintf_s(L"%s", logBuffer);
-
+		
 		fclose(fp);
 
 		break;
 
 	case eLogList::LOG_LEVEL_WARNING:
-		
-		fopen_s(&fp, "LogData.txt", "a+t");
+
+		_wfopen_s(&fp, L"LogData.txt", L"a+t");
 
 		wsprintf(logInfo, L"[%02d/%02d/%02d %02d:%02d:%02d][LOG_LEVEL_WARNING] ", stTm.tm_year + 1900, stTm.tm_mon + 1, stTm.tm_mday, stTm.tm_hour, stTm.tm_min, stTm.tm_sec);
 	
-		fwrite(logInfo, (wcslen(logInfo) * 2) + sizeof(WCHAR), 1, fp);
-
-		fwrite(logBuffer, (wcslen(logBuffer) * 2) + sizeof(WCHAR), 1, fp);
+		if (filePrintFlag)
+		{
+			fwprintf_s(fp, logInfo);
+			fwprintf_s(fp, logBuffer);
+		}
 
 		wprintf_s(L"%s", logInfo);
 		wprintf_s(L"%s", logBuffer);
@@ -57,14 +61,16 @@ void DoPrintLog(int logLevel, WCHAR* logBuffer)
 
 	case eLogList::LOG_LEVEL_NOTICE:
 
-
-		fopen_s(&fp, "LogData.txt", "a+t");
+		_wfopen_s(&fp, L"LogData.txt", L"a+t");
 
 		wsprintf(logInfo, L"[%02d/%02d/%02d %02d:%02d:%02d][LOG_LEVEL_NOTICE] ", stTm.tm_year + 1900, stTm.tm_mon + 1, stTm.tm_mday, stTm.tm_hour, stTm.tm_min, stTm.tm_sec);
 
-		fwrite(logInfo, (wcslen(logInfo) * 2) + sizeof(WCHAR), 1, fp);
+		if (filePrintFlag)
+		{
+			fwprintf_s(fp, logInfo);
+			fwprintf_s(fp, logBuffer);
+		}
 
-		fwrite(logBuffer, (wcslen(logBuffer) * 2) + sizeof(WCHAR), 1, fp);
 
 		wprintf_s(L"%s", logInfo);
 		wprintf_s(L"%s", logBuffer);
@@ -74,14 +80,16 @@ void DoPrintLog(int logLevel, WCHAR* logBuffer)
 		break;
 
 	case eLogList::LOG_LEVEL_ERROR:
-		
-		fopen_s(&fp, "LogData.txt", "a+t");
+
+		_wfopen_s(&fp, L"LogData.txt", L"a+t");
 
 		wsprintf(logInfo, L"[%02d/%02d/%02d %02d:%02d:%02d][LOG_LEVEL_ERROR] ", stTm.tm_year + 1900, stTm.tm_mon + 1, stTm.tm_mday, stTm.tm_hour, stTm.tm_min, stTm.tm_sec);
 
-		fwrite(logInfo, (wcslen(logInfo) * 2) + sizeof(WCHAR), 1, fp);
-
-		fwrite(logBuffer, (wcslen(logBuffer) * 2) + sizeof(WCHAR), 1, fp);
+		if (filePrintFlag)
+		{
+			fwprintf_s(fp, logInfo);
+			fwprintf_s(fp, logBuffer);
+		}
 
 		wprintf_s(L"%s", logInfo);
 		wprintf_s(L"%s", logBuffer);
@@ -91,11 +99,20 @@ void DoPrintLog(int logLevel, WCHAR* logBuffer)
 		break;
 	default:
 
+		_wfopen_s(&fp, L"LogData.txt", L"a+t");
+
 		wsprintf(logInfo, L"[%02d/%02d/%02d %02d:%02d:%02d] ", stTm.tm_year + 1900, stTm.tm_mon + 1, stTm.tm_mday, stTm.tm_hour, stTm.tm_min, stTm.tm_sec);
 
-		wprintf_s(L"%s", logInfo);
+		if (filePrintFlag)
+		{
+			fwprintf_s(fp, logInfo);
+			fwprintf_s(fp, logBuffer);
+		}
 
+		wprintf_s(L"%s", logInfo);
 		wprintf_s(L"logLevel : %d , LINE : %d, FILE : %s\n", logLevel, __LINE__, __FILEW__);
+
+		fclose(fp);
 
 		int* ptr = nullptr;
 

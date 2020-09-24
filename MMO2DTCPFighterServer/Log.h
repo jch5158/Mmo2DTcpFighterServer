@@ -8,18 +8,18 @@ enum eLogList
 	LOG_LEVEL_ERROR
 };
 
-#define _LOG(logLevel,fmt,...)											\
+#define _LOG(filePrintFlag, logLevel,fmt,...)											\
 do																		\
 {																		\
 	if (gLogLevel <= logLevel)											\
 	{																	\
-		wsprintf(gLogBuffer,fmt, ##__VA_ARGS__);						\
-		DoPrintLog(logLevel, gLogBuffer);								\
+		swprintf_s(gLogBuffer,fmt, ##__VA_ARGS__);						\
+		DoPrintLog(filePrintFlag,logLevel, gLogBuffer);								\
 	}																	\
 }while(0)																\
 
 
-void DoPrintLog(int logLevel, WCHAR * logBuffer);
+void DoPrintLog(bool filePrintFalg, int logLevel, WCHAR * logBuffer);
 
 void SettingLogLevel();
 

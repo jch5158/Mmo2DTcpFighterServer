@@ -7,6 +7,13 @@ CFrameSkip gFrame;
 
 CFrameSkip::CFrameSkip()
 {	
+	mAvgFrameTime = 0;
+	mMinFrameTime = 0;
+	mMaxFrameTime = 0;
+	mFrameCount = 0;
+
+	mOneSecFrame = 0;
+
 	mMaxFPS = 40;
 
 	mSupplementTime = 0;
@@ -24,11 +31,13 @@ bool CFrameSkip::FrameSkip()
 
 	static DWORD timeCheck = timeGetTime();
 
-	static DWORD framCheck = 0;
-
 	DWORD nowTime = timeGetTime();
 
-	mSupplementTime += nowTime - oldTime;
+	int frameTime = nowTime - oldTime;
+
+	mSupplementTime += frameTime;
+
+	getFrameAvrage(frameTime);
 
 	oldTime = nowTime;
 
@@ -36,19 +45,29 @@ bool CFrameSkip::FrameSkip()
 	{
 		mSupplementTime -= mMaxFPS;
 
-		framCheck += 1;
+		mOneSecFrame += 1;
 
 		if (nowTime - timeCheck >= 1000)
 		{
-			if (framCheck != 25)
+			// mFrameCheck 가 25가 아닐경우는 프레임이 틀어져서 Sync가 발생할 확률이 높다.
+			if (mOneSecFrame == 25)
 			{
-				_LOG(eLogList::LOG_LEVEL_DEBUG, L"frame : %d\n", framCheck);
+				_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"frame : %d, avgFrameTime : %f, maxFrameTime : %d, minFrameTime :%d \n", mOneSecFrame, (double)((double)mAvgFrameTime / (double)mFrameCount), mMaxFrameTime, mMinFrameTime);
+			}
+			else 
+			{
+			  _LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"frame : %d, avgFrameTime : %f, maxFrameTime : %d, minFrameTime :%d \n", mOneSecFrame, (double)((double)mAvgFrameTime / (double)mFrameCount), mMaxFrameTime, mMinFrameTime);
 			}
 
-			timeCheck = nowTime;
+			mAvgFrameTime = 0;
+			mMaxFrameTime = 0;
+			mMinFrameTime = 0;
+			mFrameCount = 0;
 
-			framCheck = 0;
-		}	
+			mOneSecFrame = 0;
+
+			timeCheck = nowTime;
+		}
 
 		return true;
 	}
@@ -57,31 +76,18 @@ bool CFrameSkip::FrameSkip()
 }
 
 
-void CFrameSkip::FrameCheck()
+void CFrameSkip::getFrameAvrage(DWORD frame)
 {
-	static DWORD frameCheck = 25;
-
-	static DWORD timeCheck = timeGetTime();
-
-	static DWORD frameNow = 0;
-
-	frameNow += 1;
-
-	if (timeGetTime() - timeCheck >= 1000)
+	if (mMaxFrameTime < frame)
 	{
-		frameCheck = frameNow;
-
-		timeCheck = timeGetTime();
-
-		frameNow = 0;
-
-		if (frameCheck != 25)
-		{
-			_LOG(eLogList::LOG_LEVEL_DEBUG, L"frame : %d\n", frameCheck);
-		}
+		mMaxFrameTime = frame;
+	}
+	else if (mMinFrameTime > frame)
+	{
+		mMinFrameTime = frame;
 	}
 
+	mFrameCount += 1;
 
-
-	return;
+	mAvgFrameTime += frame;
 }
