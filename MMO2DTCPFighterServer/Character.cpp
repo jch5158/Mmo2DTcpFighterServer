@@ -65,9 +65,9 @@ void DeleteCharacter(stSession* pSession)
 	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)
 	{
-		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"DeleteCharacter Error LINE : %d, FILE : %s", __LINE__, __FILEW__);
-		int* ptr = nullptr;
-		*ptr = -1;
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"DeleteCharacter NotFound SessionID : %d", pSession->sessionID);
+		
+		return;
 	}
 
 	CMessage message;

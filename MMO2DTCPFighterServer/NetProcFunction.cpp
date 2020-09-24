@@ -12,6 +12,9 @@ SOCKET gListenSocket;
 
 std::unordered_map<SOCKET, stSession*> gSessionMap;
 
+std::list<stSession*> gClearSessionList;
+
+
 // 새로운 세션을 생성,등록 한다.
 stSession* CreateSession(SOCKET socket)
 {
@@ -88,7 +91,6 @@ void DeleteClient(SOCKET socket)
 		int* ptr = nullptr;
 		*ptr = -1;
 	}
-
 
 	DeleteCharacter(pSession);
 
@@ -212,6 +214,20 @@ void CleanUpNetwork(void)
 }
 
 
+void ClearSessionList(void)
+{
+
+	auto iterE = gClearSessionList.end();
+
+	for (auto iter = gClearSessionList.begin(); iter != iterE; )
+	{
+		DeleteClient((*iter)->socket);
+
+		iter = gClearSessionList.erase(iter);
+	}
+}
+
+
 
 void NetworkProcessing(void)
 {
@@ -232,7 +248,6 @@ void NetworkProcessing(void)
 	FD_SET(gListenSocket, &readSet);
 	socketTable[socketCount] = gListenSocket;
 	++socketCount;
-
 
 	auto sessionIterE = gSessionMap.end();
 
@@ -280,6 +295,7 @@ void NetworkProcessing(void)
 		SelectSocket(socketTable, &writeSet, &readSet);
 	}
 
+	ClearSessionList();
 }
 
 void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
@@ -454,7 +470,10 @@ void RecvEvent(SOCKET socket)
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"recv Eerror, Error Code : %d\n", WSAGetLastError());	
 			
 		// session과 client를 정리한다.
-		DeleteClient(socket);
+		
+		//DeleteClient(socket);
+		
+		gClearSessionList.push_back(pSession);
 
 		return;
 	}
@@ -511,7 +530,9 @@ bool SendEvent(SOCKET socket)
 		// retval 이 SOCKET_ERROR일 경우 송신버퍼가 꽉 찼거나 클라이언트가 끊겼다고 판단하여 귾는다.
 		_LOG(TRUE,eLogList::LOG_LEVEL_WARNING, L"recv Eerror, Error Code : %d\n", WSAGetLastError());
 
-		DeleteClient(socket);
+		//DeleteClient(socket);
+
+		gClearSessionList.push_back(pSession);
 
 		return false;
 	}
@@ -553,7 +574,9 @@ int CheckComplateMessage(stSession* pSession)
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Packet Code : %d, Session ID : %d \n", messageHeader.byCode, pSession->sessionID);
 		
 		// Accept() 로직으로 인해서 무조건 클라이언트 캐릭터가 존재하기 때문에 DeleteClient() 함수로 세션과 캐릭터 정보를 정리한다.
-		DeleteClient(pSession->socket);
+		//DeleteClient(pSession->socket);
+
+		gClearSessionList.push_back(pSession);
 
 		return -1;
 	}
@@ -609,8 +632,10 @@ int CheckComplateMessage(stSession* pSession)
 		// 에러 함수의 인자 데이터 타입
 		fwrite(exception.m_ErrorDataLog, 1, strlen(exception.m_ErrorDataLog), fp);
 
-		DisconnectSession(pSession->socket);
+		//DeleteClient(pSession->socket);
 		
+		gClearSessionList.push_back(pSession);
+
 		fclose(fp);
 
 		return -1;
@@ -653,7 +678,9 @@ bool RecvMessageProcessing(stSession* pSession, BYTE messageType, CMessage* pMes
 
 		_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"unknown type, type : %d, Session ID : %d\n", messageType, pSession->sessionID);
 
-		DeleteClient(pSession->socket);
+//		DeleteClient(pSession->socket);
+
+		gClearSessionList.push_back(pSession);
 
 		break;
 	}
@@ -679,8 +706,10 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 	{
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"# MOVESTART # Character Not Found : %d\n", pSession->sessionID);
 
-		DisconnectSession(pSession->socket);
-		
+		//DeleteClient(pSession->socket);
+
+		gClearSessionList.push_back(pSession);
+
 		int* ptr = nullptr;
 
 		*ptr = -1;
@@ -763,8 +792,10 @@ bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 	{
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"# MOVESTOP # Character Not Found : %d\n", pSession->sessionID);
 
-		DisconnectSession(pSession->socket);
-		
+		//DeleteClient(pSession->socket);
+
+		gClearSessionList.push_back(pSession);
+
 		int* ptr = nullptr;
 		*ptr = -1;
 

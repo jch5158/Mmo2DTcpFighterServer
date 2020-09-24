@@ -16,6 +16,9 @@ extern SOCKET gListenSocket;
 
 extern std::unordered_map<SOCKET, stSession*> gSessionMap;
 
+extern std::list<stSession*> gClearSessionList;
+
+
 // Socket 으로 세션 찾기.
 stSession* FindSession(SOCKET socket);
 
@@ -24,17 +27,19 @@ stSession* CreateSession(SOCKET socket);
 
 void DisconnectSession(SOCKET socket);
 
-
 // DisconnectSession(), DeleteCharacter() 함수 랩핑
 void DeleteClient(SOCKET socket);
 
-
-void CleanUpSession(void);
-
+void ClearSessionList(void);
 
 void SetupNetwork(void);
 
+void CleanUpSession(void);
+
 void CleanUpNetwork(void);
+
+
+
 
 void NetworkProcessing(void);
 
@@ -45,6 +50,8 @@ void Accept(void);
 void RecvEvent(SOCKET socket);
 
 bool SendEvent(SOCKET socket);
+
+
 
 // 0은 처리완료, 1은 처리 할 거 없음, -1 오류
 int CheckComplateMessage(stSession* pSession);
