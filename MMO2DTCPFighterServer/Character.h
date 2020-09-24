@@ -28,3 +28,6 @@ stCharacter* FindCharacter(DWORD sessionID);
 void DeleteCharacter(stSession* pSession);
 
 bool CheckCharacterMove(short posX, short posY);
+
+
+void CleanUpCharacter(void);

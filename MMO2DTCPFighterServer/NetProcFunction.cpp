@@ -71,7 +71,7 @@ void DisconnectSession(SOCKET socket)
 
 	gSessionMap.erase(socket);
 	closesocket(socket);
-	free(pSession);
+	delete pSession;
 
 	return;
 }
@@ -95,7 +95,21 @@ void DeleteClient(SOCKET socket)
 	DisconnectSession(pSession->socket);
 }
 
+void CleanUpSession(void)
+{
+	auto iterE = gSessionMap.end();
 
+	for (auto iter = gSessionMap.begin(); iter != iterE;)
+	{
+		auto deleteIter = iter;
+		++iter;
+
+		gSessionMap.erase((*deleteIter).second->socket);
+		closesocket((*deleteIter).second->socket);
+			
+		delete (*deleteIter).second;
+	}
+}
 
 void SetupNetwork(void)
 {
@@ -190,6 +204,14 @@ void SetupNetwork(void)
 
 	return;
 }
+
+void CleanUpNetwork(void)
+{
+	closesocket(gListenSocket);
+	WSACleanup();
+}
+
+
 
 void NetworkProcessing(void)
 {
@@ -314,7 +336,7 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 }
 
 
-void Accept()
+void Accept(void)
 {
 	SOCKET clientSocket;
 

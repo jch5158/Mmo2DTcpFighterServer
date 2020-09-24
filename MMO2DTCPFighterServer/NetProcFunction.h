@@ -29,13 +29,18 @@ void DisconnectSession(SOCKET socket);
 void DeleteClient(SOCKET socket);
 
 
+void CleanUpSession(void);
+
+
 void SetupNetwork(void);
+
+void CleanUpNetwork(void);
 
 void NetworkProcessing(void);
 
 void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet);
  
-void Accept();
+void Accept(void);
 
 void RecvEvent(SOCKET socket);
 

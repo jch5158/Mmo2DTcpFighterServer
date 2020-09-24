@@ -1,2 +1,8 @@
 [2020/09/24 23:05:32][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.016002, maxFrameTime : 7, minFrameTime :0 
 [2020/09/24 23:09:47][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.010318, maxFrameTime : 3, minFrameTime :0 
+[2020/09/24 23:24:24][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.078126, maxFrameTime : 7, minFrameTime :0 
+[2020/09/24 23:24:58][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.075023, maxFrameTime : 10, minFrameTime :0 
+[2020/09/24 23:25:09][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.075884, maxFrameTime : 8, minFrameTime :0 
+[2020/09/24 23:26:38][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.065023, maxFrameTime : 7, minFrameTime :0 
+[2020/09/25 00:09:32][LOG_LEVEL_ERROR] Accept ¿Ï·á sessionID : 1
+[2020/09/25 00:37:27][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.079053, maxFrameTime : 6, minFrameTime :0 

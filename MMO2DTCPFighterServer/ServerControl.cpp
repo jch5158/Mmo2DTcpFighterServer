@@ -26,7 +26,7 @@ void ServerControling(void)
 			controlModeFlag = false;
 		}
 
-		if (controlKey == L'q' || controlKey == L'Q')
+		if ((controlKey == L'q' || controlKey == L'Q') && controlModeFlag)
 		{
 			gShutdwonFlag = true;
 		}

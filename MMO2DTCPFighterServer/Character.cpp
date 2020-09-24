@@ -96,3 +96,20 @@ bool CheckCharacterMove(short posX, short posY)
 
 	return false;
 }
+
+void CleanUpCharacter(void)
+{
+
+	auto iterE = gCharacterMap.end();
+
+	for (auto iter = gCharacterMap.begin(); iter != iterE;)
+	{
+		auto deleteIter = iter;
+
+		++iter;
+
+		RemoveSectorPosition((*deleteIter).second);
+
+		gCharacterMap.erase((*deleteIter).second->sessionID);
+	}
+}

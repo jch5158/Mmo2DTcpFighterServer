@@ -9,6 +9,7 @@
 #include "Sector.h"
 #include "Character.h"
 #include "MainUpdate.h"
+#include "MMO2DTCPFighterServer.h"
 
 bool gShutdwonFlag = false;
 
@@ -35,5 +36,17 @@ int main()
 		ServerControling();
 	}
 	
+	CleanUpAll();
+
 	timeEndPeriod(1);
+}
+
+
+void CleanUpAll()
+{
+	CleanUpCharacter();
+	
+	CleanUpSession();
+
+	CleanUpNetwork();
 }
