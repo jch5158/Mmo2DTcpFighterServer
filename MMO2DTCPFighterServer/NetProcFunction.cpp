@@ -99,6 +99,8 @@ void DeleteClient(SOCKET socket)
 
 void CleanUpSession(void)
 {
+	gClearSessionList.clear();
+
 	auto iterE = gSessionMap.end();
 
 	for (auto iter = gSessionMap.begin(); iter != iterE;)
@@ -231,6 +233,9 @@ void ClearSessionList(void)
 
 void NetworkProcessing(void)
 {
+	// gClearSessionList에 있는 세션들을 다 정리한다.
+	ClearSessionList();
+
 	// 64개씩 소켓 select
 	int socketCount = 0;
 
@@ -295,7 +300,6 @@ void NetworkProcessing(void)
 		SelectSocket(socketTable, &writeSet, &readSet);
 	}
 
-	ClearSessionList();
 }
 
 void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)

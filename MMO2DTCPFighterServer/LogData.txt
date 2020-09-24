@@ -12,3 +12,13 @@
 [2020/09/25 01:12:51][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
 [2020/09/25 01:12:56][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
 [2020/09/25 01:13:04][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 01:19:57][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/25 01:20:00][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/25 01:20:04][LOG_LEVEL_ERROR] Accept 완료 sessionID : 3
+[2020/09/25 01:20:21][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 01:20:27][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 01:20:29][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 01:22:05][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/25 01:22:09][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/25 01:22:16][LOG_LEVEL_ERROR] Accept 완료 sessionID : 3
+[2020/09/25 01:22:17][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.081024, maxFrameTime : 15, minFrameTime :0 

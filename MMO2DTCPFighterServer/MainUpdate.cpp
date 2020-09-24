@@ -19,8 +19,6 @@ void Update()
 		return;
 	}
 
-
-
 	stCharacter* pCharecter = nullptr;
 
 	auto charecterIterE = gCharacterMap.end();
