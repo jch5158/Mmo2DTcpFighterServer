@@ -1,24 +1,56 @@
-[2020/09/24 23:05:32][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.016002, maxFrameTime : 7, minFrameTime :0 
-[2020/09/24 23:09:47][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.010318, maxFrameTime : 3, minFrameTime :0 
-[2020/09/24 23:24:24][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.078126, maxFrameTime : 7, minFrameTime :0 
-[2020/09/24 23:24:58][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.075023, maxFrameTime : 10, minFrameTime :0 
-[2020/09/24 23:25:09][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.075884, maxFrameTime : 8, minFrameTime :0 
-[2020/09/24 23:26:38][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.065023, maxFrameTime : 7, minFrameTime :0 
-[2020/09/25 00:09:32][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
-[2020/09/25 00:37:27][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.079053, maxFrameTime : 6, minFrameTime :0 
-[2020/09/25 01:12:39][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
-[2020/09/25 01:12:42][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
-[2020/09/25 01:12:45][LOG_LEVEL_ERROR] Accept 완료 sessionID : 3
-[2020/09/25 01:12:51][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
-[2020/09/25 01:12:56][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
-[2020/09/25 01:13:04][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
-[2020/09/25 01:19:57][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
-[2020/09/25 01:20:00][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
-[2020/09/25 01:20:04][LOG_LEVEL_ERROR] Accept 완료 sessionID : 3
-[2020/09/25 01:20:21][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
-[2020/09/25 01:20:27][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
-[2020/09/25 01:20:29][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
-[2020/09/25 01:22:05][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
-[2020/09/25 01:22:09][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
-[2020/09/25 01:22:16][LOG_LEVEL_ERROR] Accept 완료 sessionID : 3
-[2020/09/25 01:22:17][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.081024, maxFrameTime : 15, minFrameTime :0 
+[2020/09/25 23:05:39][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/25 23:05:42][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/25 23:05:53][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.081349, maxFrameTime : 8, minFrameTime :0 
+[2020/09/25 23:05:56][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.079277, maxFrameTime : 9, minFrameTime :0 
+[2020/09/25 23:06:07][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 23:06:08][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 23:07:26][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/25 23:07:30][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/25 23:08:30][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 23:08:31][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 23:10:22][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/25 23:10:25][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.078044, maxFrameTime : 8, minFrameTime :0 
+[2020/09/25 23:10:28][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.081102, maxFrameTime : 7, minFrameTime :0 
+[2020/09/25 23:10:31][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 23:11:02][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/25 23:12:38][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.079574, maxFrameTime : 6, minFrameTime :0 
+[2020/09/25 23:13:08][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 23:13:11][LOG_LEVEL_ERROR] frame : 1, avgFrameTime : 1360.000000, maxFrameTime : 1360, minFrameTime :0 
+[2020/09/25 23:13:12][LOG_LEVEL_ERROR] frame : 58, avgFrameTime : 0.080115, maxFrameTime : 29, minFrameTime :0 
+[2020/09/25 23:52:42][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/25 23:52:46][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/25 23:53:43][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.082329, maxFrameTime : 9, minFrameTime :0 
+[2020/09/25 23:54:15][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/25 23:54:16][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 00:40:00][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/26 00:40:02][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/26 00:40:38][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 00:40:39][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 00:46:22][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/26 00:46:25][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/26 00:47:27][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/26 00:47:31][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/26 00:49:25][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/26 00:49:29][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/26 00:57:48][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/26 00:57:52][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/26 00:58:02][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 00:58:03][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 00:58:26][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/26 00:58:30][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/26 00:58:52][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 00:58:52][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.082024, maxFrameTime : 13, minFrameTime :0 
+[2020/09/26 00:58:53][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 00:59:43][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/26 00:59:45][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/26 01:00:17][LOG_LEVEL_ERROR] Accept 완료 sessionID : 3
+[2020/09/26 01:00:29][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 01:17:52][LOG_LEVEL_ERROR] Accept 완료 sessionID : 1
+[2020/09/26 01:17:55][LOG_LEVEL_ERROR] Accept 완료 sessionID : 2
+[2020/09/26 01:18:15][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 01:18:22][LOG_LEVEL_ERROR] Accept 완료 sessionID : 3
+[2020/09/26 01:18:25][LOG_LEVEL_ERROR] Accept 완료 sessionID : 4
+[2020/09/26 01:18:54][LOG_LEVEL_ERROR] frame : 26, avgFrameTime : 0.079388, maxFrameTime : 9, minFrameTime :0 
+[2020/09/26 01:19:08][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 01:19:10][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0
+[2020/09/26 01:19:11][LOG_LEVEL_ERROR] recv Eerror, Error Code : 0

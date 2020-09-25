@@ -56,7 +56,7 @@ bool CFrameSkip::FrameSkip()
 			}
 			else 
 			{
-			  _LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"frame : %d, avgFrameTime : %f, maxFrameTime : %d, minFrameTime :%d \n", mOneSecFrame, (double)((double)mAvgFrameTime / (double)mFrameCount), mMaxFrameTime, mMinFrameTime);
+			    _LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"frame : %d, avgFrameTime : %f, maxFrameTime : %d, minFrameTime :%d \n", mOneSecFrame, (double)((double)mAvgFrameTime / (double)mFrameCount), mMaxFrameTime, mMinFrameTime);
 			}
 
 			mAvgFrameTime = 0;

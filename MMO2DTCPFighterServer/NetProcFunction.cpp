@@ -380,9 +380,7 @@ void Accept(void)
 	}
 
 	gSessionMap.insert(std::pair<SOCKET, stSession*>(clientSocket, pSession));
-
-	//auto testIter = gSessionMap.begin();
-
+	
 	/*short posX = (rand() % 6000) + 200;
 	short posY = (rand() % 6000) + 200;*/
 
@@ -472,11 +470,7 @@ void RecvEvent(SOCKET socket)
 	{
 		// 클라이언트가 끊었거나 recv 에러이다.
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"recv Eerror, Error Code : %d\n", WSAGetLastError());	
-			
-		// session과 client를 정리한다.
-		
-		//DeleteClient(socket);
-		
+						
 		gClearSessionList.push_back(pSession);
 
 		return;
@@ -534,8 +528,6 @@ bool SendEvent(SOCKET socket)
 		// retval 이 SOCKET_ERROR일 경우 송신버퍼가 꽉 찼거나 클라이언트가 끊겼다고 판단하여 귾는다.
 		_LOG(TRUE,eLogList::LOG_LEVEL_WARNING, L"recv Eerror, Error Code : %d\n", WSAGetLastError());
 
-		//DeleteClient(socket);
-
 		gClearSessionList.push_back(pSession);
 
 		return false;
@@ -577,9 +569,7 @@ int CheckComplateMessage(stSession* pSession)
 	{
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Packet Code : %d, Session ID : %d \n", messageHeader.byCode, pSession->sessionID);
 		
-		// Accept() 로직으로 인해서 무조건 클라이언트 캐릭터가 존재하기 때문에 DeleteClient() 함수로 세션과 캐릭터 정보를 정리한다.
-		//DeleteClient(pSession->socket);
-
+		// Accept() 로직으로 인해서 무조건 클라이언트 캐릭터가 존재하기 때문에 DeleteClient() 함수로 세션과 캐릭터 정보를 정리한다.	
 		gClearSessionList.push_back(pSession);
 
 		return -1;
@@ -635,8 +625,6 @@ int CheckComplateMessage(stSession* pSession)
 
 		// 에러 함수의 인자 데이터 타입
 		fwrite(exception.m_ErrorDataLog, 1, strlen(exception.m_ErrorDataLog), fp);
-
-		//DeleteClient(pSession->socket);
 		
 		gClearSessionList.push_back(pSession);
 
@@ -682,8 +670,6 @@ bool RecvMessageProcessing(stSession* pSession, BYTE messageType, CMessage* pMes
 
 		_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"unknown type, type : %d, Session ID : %d\n", messageType, pSession->sessionID);
 
-//		DeleteClient(pSession->socket);
-
 		gClearSessionList.push_back(pSession);
 
 		break;
@@ -703,14 +689,10 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 	*pMessage >> posX;
 	*pMessage >> posY;
 
-	_LOG(FALSE,eLogList::LOG_LEVEL_DEBUG, L"# MOVESTART # SessionID:%d / Direction:%d / X:%d / Y:%d \n",pSession->sessionID, moveDirection, posX, posY);
-
 	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)
 	{
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"# MOVESTART # Character Not Found : %d\n", pSession->sessionID);
-
-		//DeleteClient(pSession->socket);
 
 		gClearSessionList.push_back(pSession);
 
@@ -719,10 +701,12 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 		*ptr = -1;
 	}
 
+	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"# MOVESTART # SessionID:%d / Direction:%d / X:%d / Y:%d, serverX : %d, serverY : %d \n", pSession->sessionID, moveDirection, posX, posY, pCharacter->posX, pCharacter->posY);
+
 
 	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
 	{
-		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d",
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
 			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
 		);
 
@@ -766,15 +750,15 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 	if (UpdateSectorPosition(pCharacter))
 	{
 		// 섹터가 바뀌었다면은 SendUpdateCharacterSector로 브로드캐스팅
-		SendUpdateCharacterSector(pCharacter);
-		
-		return true;
+		SendUpdateCharacterSector(pCharacter);		
 	}
+	else
+	{
+		PackingMoveStart(pMessage, pCharacter->sessionID, pCharacter->moveDirection, pCharacter->posX, pCharacter->posY);
 
-	PackingMoveStart(pMessage, pCharacter->sessionID, pCharacter->moveDirection, pCharacter->posX, pCharacter->posY);
-
-	// 섹터가 바뀌지 않았다면은 직접 패킷 만든 후 AroundSector로 브로드캐스팅
-	SendProcAroundSector(pSession, pMessage);
+		// 섹터가 바뀌지 않았다면은 직접 패킷 만든 후 AroundSector로 브로드캐스팅
+		SendProcAroundSector(pSession, pMessage);
+	}
 
 	return true;
 }
@@ -789,14 +773,11 @@ bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 	*pMessage >> posX;
 	*pMessage >> posY;
 
-	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"# MOVESTOP # SessionID:%d / Direction:%d / X:%d / Y:%d \n", pSession->sessionID, moveDirection, posX, posY);
-
+	
 	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
 	if (pCharacter == nullptr)
 	{
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"# MOVESTOP # Character Not Found : %d\n", pSession->sessionID);
-
-		//DeleteClient(pSession->socket);
 
 		gClearSessionList.push_back(pSession);
 
@@ -806,9 +787,12 @@ bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 		return false;
 	}
 
+	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"# MOVESTOP # SessionID:%d / Direction:%d / X:%d / Y:%d, serverX : %d, serverY : %d \n", pSession->sessionID, moveDirection, posX, posY,pCharacter->posX,pCharacter->posY);
+
+
 	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
 	{
-		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d",
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
 			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
 		);
 
@@ -841,18 +825,169 @@ bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 
 bool Attack1MessageProcessing(stSession* pSession, CMessage* pMessage)
 {
+	unsigned char direction;
+	short posX;
+	short posY;
+
+	*pMessage >> direction >> posX >> posY;
+
+	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
+	if(pCharacter == nullptr)
+	{
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack1Processing# NotFoundClient sessionID : %d\n", pSession->sessionID);
+		
+		int* ptr = nullptr;
+		*ptr = -1;
+	}
+
+	_LOG(FALSE,eLogList::LOG_LEVEL_DEBUG,L"#Attack1Processing# ClientDir : %d, ClientX : %d, ClientY : %d, serverX : %d, serverY : %d\n",direction,posX,posY,pCharacter->posX,pCharacter->posY);
+
+	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
+	{
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack1MessageProcessing# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
+			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
+		);
+
+		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
+
+		SendProcAroundSector(pSession, pMessage, true);
+
+		posX = pCharacter->posX;
+		posY = pCharacter->posY;
+	}
+
+	pCharacter->posX = posX;
+	pCharacter->posY = posY;
+	pCharacter->direction = direction;
+	pCharacter->action = eKeyList::eACTION_STAND;
+
+	CMessage message;
+
+	PackingAttack1(&message, pSession->sessionID, direction, posX, posY);
+
+	SendProcAttackAroundSector(pSession, &message);
+
+	stCharacter *victimCharacter = nullptr;
+	Attack1ColisionCheck(pCharacter, &victimCharacter);
+	if (victimCharacter != nullptr)
+	{
+		PackingDamage(&message, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
+
+		SendProcAttackAroundSector(pSession, &message, true);
+	}
+
 
 	return true;
 }
 
 bool Attack2MessageProcessing(stSession* pSession, CMessage* pMessage)
 {
+	unsigned char direction;
+	short posX;
+	short posY;
+
+	*pMessage >> direction >> posX >> posY;
+
+	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
+	if (pCharacter == nullptr)
+	{
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack2Processing# NotFoundClient sessionID : %d\n", pSession->sessionID);
+
+		int* ptr = nullptr;
+		*ptr = -1;
+	}
+
+	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"#Attack2Processing# ClientDir : %d, ClientX : %d, ClientY : %d, serverX : %d, serverY : %d\n", direction, posX, posY, pCharacter->posX, pCharacter->posY);
+
+	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
+	{
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack2MessageProcessing# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
+			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
+		);
+
+		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
+
+		SendProcAroundSector(pSession, pMessage, true);
+
+		posX = pCharacter->posX;
+		posY = pCharacter->posY;
+	}
+
+	pCharacter->posX = posX;
+	pCharacter->posY = posY;
+	pCharacter->direction = direction;
+	pCharacter->action = eKeyList::eACTION_STAND;
+
+	CMessage message;
+
+	PackingAttack2(&message, pSession->sessionID, direction, posX, posY);
+
+	SendProcAttackAroundSector(pSession, &message);
+
+	stCharacter* victimCharacter = nullptr;
+	Attack2ColisionCheck(pCharacter, &victimCharacter);
+	if (victimCharacter != nullptr)
+	{
+		PackingDamage(&message, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
+
+		SendProcAttackAroundSector(pSession, &message, true);
+	}
 
 	return true;
 }
 
 bool Attack3MessageProcessing(stSession* pSession, CMessage* pMessage)
 {
+	unsigned char direction;
+	short posX;
+	short posY;
+
+	*pMessage >> direction >> posX >> posY;
+
+	stCharacter* pCharacter = FindCharacter(pSession->sessionID);
+	if (pCharacter == nullptr)
+	{
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack3Processing# NotFoundClient sessionID : %d\n", pSession->sessionID);
+
+		int* ptr = nullptr;
+		*ptr = -1;
+	}
+
+	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"#Attack3Processing# ClientDir : %d, ClientX : %d, ClientY : %d, serverX : %d, serverY : %d\n", direction, posX, posY, pCharacter->posX, pCharacter->posY);
+
+	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
+	{
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack3MessageProcessing# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
+			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
+		);
+
+		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
+
+		SendProcAroundSector(pSession, pMessage, true);
+
+		posX = pCharacter->posX;
+		posY = pCharacter->posY;
+	}
+
+	pCharacter->posX = posX;
+	pCharacter->posY = posY;
+	pCharacter->direction = direction;
+	pCharacter->action = eKeyList::eACTION_STAND;
+
+	CMessage message;
+
+	PackingAttack3(&message, pSession->sessionID, direction, posX, posY);
+
+	SendProcAttackAroundSector(pSession, &message);
+
+	stCharacter* victimCharacter = nullptr;
+	Attack3ColisionCheck(pCharacter, &victimCharacter);
+	if (victimCharacter != nullptr)
+	{
+		PackingDamage(&message, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
+
+		SendProcAttackAroundSector(pSession, &message, true);
+	}
 
 	return true;
 }
@@ -864,7 +999,7 @@ void PackingCreateCharacter(CMessage* pMessage, DWORD sessionID, BYTE direction,
 
 	messageHeader.byCode = dfNETWORK_PACKET_CODE;
 	messageHeader.byType = dfPACKET_SC_CREATE_MY_CHARACTER;
-	messageHeader.bySize = sizeof(DWORD) + sizeof(BYTE) + sizeof(short) + sizeof(short) + sizeof(BYTE);
+	messageHeader.bySize = sizeof(sessionID) + sizeof(direction) + sizeof(posX) + sizeof(posY) + sizeof(hp);
 
 	pMessage->Clear();
 
@@ -879,7 +1014,7 @@ void PackingDeleteCharacter(CMessage* pMessage, DWORD sessionID)
 	stHeader messageHeader;
 
 	messageHeader.byCode = dfNETWORK_PACKET_CODE;
-	messageHeader.bySize = sizeof(DWORD);
+	messageHeader.bySize = sizeof(sessionID);
 	messageHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
 
 	pMessage->Clear();
@@ -896,7 +1031,7 @@ void PackingCreateOtherCharacter(CMessage* pMessage, DWORD sessionID, BYTE direc
 	stHeader messageHeader;
 
 	messageHeader.byCode = dfNETWORK_PACKET_CODE;
-	messageHeader.bySize = sizeof(DWORD) + sizeof(BYTE) + sizeof(short) + sizeof(short) + sizeof(BYTE);
+	messageHeader.bySize = sizeof(sessionID) + sizeof(direction) + sizeof(posX) + sizeof(posY) + sizeof(hp);
 	messageHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
 
 	pMessage->Clear();
@@ -912,7 +1047,7 @@ void PackingMoveStart(CMessage* pMessage, DWORD sessionID, BYTE moveDirection, s
 	stHeader messageHeader;
 
 	messageHeader.byCode = dfNETWORK_PACKET_CODE;
-	messageHeader.bySize = sizeof(DWORD) + sizeof(BYTE) + sizeof(short) + sizeof(short);
+	messageHeader.bySize = sizeof(sessionID) + sizeof(moveDirection) + sizeof(posX) + sizeof(posY);
 	messageHeader.byType = dfPACKET_SC_MOVE_START;
 
 	pMessage->Clear();
@@ -929,7 +1064,7 @@ void PackingMoveStop(CMessage* pMessage, DWORD sessionID, BYTE moveDirection, sh
 	stHeader messageHeader;
 
 	messageHeader.byCode = dfNETWORK_PACKET_CODE;
-	messageHeader.bySize = sizeof(DWORD) + sizeof(BYTE) + sizeof(short) + sizeof(short);
+	messageHeader.bySize = sizeof(sessionID) + sizeof(moveDirection) + sizeof(posX) + sizeof(posY);
 	messageHeader.byType = dfPACKET_SC_MOVE_STOP;
 
 	pMessage->Clear();
@@ -945,7 +1080,7 @@ void PackingSynPosition(CMessage* pMessage, DWORD sessionID, short posX, short p
 {
 	stHeader messageHeader;
 	messageHeader.byCode = dfNETWORK_PACKET_CODE;
-	messageHeader.bySize = sizeof(DWORD) + sizeof(short) + sizeof(short);
+	messageHeader.bySize = sizeof(sessionID) + sizeof(posX) + sizeof(posY);
 	messageHeader.byType = dfPACKET_SC_SYNC;
 
 	pMessage->Clear();
@@ -956,13 +1091,77 @@ void PackingSynPosition(CMessage* pMessage, DWORD sessionID, short posX, short p
 	*pMessage << (unsigned int)sessionID << posX << posY;
 }
 
+void PackingAttack1(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY)
+{
+	stHeader messageHeader;
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(sessionID) + sizeof(direction) + sizeof(posX) + sizeof(posY);
+	messageHeader.byType = dfPACKET_SC_ATTACK1;
 
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << (unsigned char)direction << posX << posY;
+}
+
+
+void PackingAttack2(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY)
+{
+
+	stHeader messageHeader;
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(sessionID) + sizeof(direction) + sizeof(posX) + sizeof(posY);
+	messageHeader.byType = dfPACKET_SC_ATTACK2;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << (unsigned char)direction << posX << posY;
+}
+
+void PackingAttack3(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY)
+{
+
+	stHeader messageHeader;
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(sessionID) + sizeof(direction) + sizeof(posX) + sizeof(posY);
+	messageHeader.byType = dfPACKET_SC_ATTACK3;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << (unsigned char)direction << posX << posY;
+}
+
+void PackingDamage(CMessage* pMessage, DWORD sessionID, DWORD victimSessionID, BYTE damegeHp)
+{
+	stHeader messageHeader;
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(sessionID) + sizeof(victimSessionID) + sizeof(damegeHp);
+	messageHeader.byType = dfPACKET_SC_DAMAGE;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+	*pMessage << (unsigned int)sessionID << (unsigned int)victimSessionID << (unsigned char)damegeHp;
+}
+
+// pSession의 send 링 버퍼에 인큐
 void SendProcUnicasting(stSession* pSession, CMessage* pMessage)
 {
 	pSession->sendQ.Enqueue(pMessage->GetBufferPtr(), pMessage->GetDataSize());
 }
 
 
+// 하나의 섹터 list에 있는 client들에게 SendProcUnicasting();
 void SendProcOneSector(int sectorPosX, int sectorPosY, stSession* pExceptSession, CMessage* pMessage)
 {
 	auto iterE = gSector[sectorPosY][sectorPosX].end();
@@ -993,22 +1192,65 @@ void SendProcAroundSector(stSession* pSession, CMessage* pMessage, bool sendMeFl
 	}
 
 	stSectorAround sectorAround;
+
+	// pCharacter의 영향권 섹터를 얻기위해 GetSectorAround 호출
 	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &sectorAround);
 
-	stSession* pExistSession;
+	stSession* pExceptSession;
 
 	// sendMeFlag 가 true일 경우 나한테도 메시지를 보낸다.
 	if (sendMeFlag)
 	{
-		pExistSession = nullptr;
+		pExceptSession = nullptr;
 	}
 	else
 	{
-		pExistSession = pSession;
+		pExceptSession = pSession;
 	}
 
+	// sectorAround에 있는 섹터를 대상으로 SendProcOneSector(); 호출
 	for (int count = 0; count < sectorAround.count; ++count)
 	{	
-		SendProcOneSector(sectorAround.around[count].posX, sectorAround.around[count].posY, pExistSession, pMessage);
+		SendProcOneSector(sectorAround.around[count].posX, sectorAround.around[count].posY, pExceptSession, pMessage);
+	}
+}
+
+
+void SendProcAttackAroundSector(stSession* pSession, CMessage* pMessage, bool sendMeFlag)
+{
+	stCharacter* pCharacter;
+
+	pCharacter = FindCharacter(pSession->sessionID);
+	if (pCharacter == nullptr)
+	{
+		// 캐릭터를 못찾을리가 없음 내 로직의 문제임.
+		// 조작된 클라이언트라고 해도 Accept쪽에서 처리해버림
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#SendProcAttackAroundSector# Not Found Character SessionID : %d", pSession->sessionID);
+
+		int* ptr = nullptr;
+
+		*ptr = -1;
+	}
+
+	stAttackSectorAround attackSectorAround;
+
+	GetAttackSectorAround(pCharacter, &attackSectorAround);
+
+	stSession* pExceptSession;
+
+	// sendMeFlag 가 true일 경우 나한테도 메시지를 보낸다.
+	if (sendMeFlag)
+	{
+		pExceptSession = nullptr;
+	}
+	else
+	{
+		pExceptSession = pSession;
+	}
+
+
+	for (int count = 0; count < attackSectorAround.count; ++count)
+	{
+		SendProcOneSector(attackSectorAround.around[count].posX, attackSectorAround.around[count].posY, pExceptSession, pMessage);
 	}
 }

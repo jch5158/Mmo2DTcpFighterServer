@@ -28,11 +28,8 @@ void Update()
 		++charecterIter;
 
 		if (pCharecter->hp <= 0)
-		{	
-			//DeleteClient(pCharecter->pSession->socket);
-			
+		{		
 			gClearSessionList.push_back(pCharecter->pSession);
-
 		}
 		else
 		{

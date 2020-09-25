@@ -113,3 +113,182 @@ void CleanUpCharacter(void)
 		gCharacterMap.erase((*deleteIter).second->sessionID);
 	}
 }
+
+
+void Attack1ColisionCheck(stCharacter* pCharacter, stCharacter** pVictimCharacter)
+{
+	stSectorAround sectorAround;
+
+	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &sectorAround);
+
+	short rangeX;
+	short rangeY;
+
+	for (int count = 0; count < sectorAround.count; ++count)
+	{
+		auto sectorList = gSector[sectorAround.around[count].posY][sectorAround.around[count].posX];
+
+		auto iterE = sectorList.end();
+
+		for (auto iter = sectorList.begin(); iter != iterE; ++iter)
+		{
+			if ((*iter) == pCharacter)
+			{
+				continue;
+			}
+
+			if (pCharacter->direction == eKeyList::eACTION_MOVE_RR)
+			{
+				rangeX = (*iter)->posX - pCharacter->posX;
+				rangeY = (*iter)->posY - pCharacter->posY;
+			}
+			else
+			{
+				rangeX = pCharacter->posX - (*iter)->posX;
+				rangeY = pCharacter->posY - (*iter)->posY;
+			}
+
+			if (rangeX < 0 || rangeY < 0)
+			{
+				continue;
+			}
+
+			if (rangeX < dfATTACK1_RANGE_X && rangeY < dfATTACK1_RANGE_Y)
+			{
+				*pVictimCharacter = (*iter);
+				
+				if ((*pVictimCharacter)->hp - 3 > 0)
+				{
+					(*pVictimCharacter)->hp -= 3;
+				}
+				else
+				{
+					(*pVictimCharacter)->hp = 0;
+				}
+				
+				return;
+			}
+		}
+	}	
+
+	pVictimCharacter = nullptr;
+}
+
+
+void Attack2ColisionCheck(stCharacter* pCharacter, stCharacter** pVictimCharacter)
+{
+	stSectorAround sectorAround;
+
+	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &sectorAround);
+
+	short rangeX;
+	short rangeY;
+
+	for (int count = 0; count < sectorAround.count; ++count)
+	{
+		auto sectorList = gSector[sectorAround.around[count].posY][sectorAround.around[count].posX];
+
+		auto iterE = sectorList.end();
+
+		for (auto iter = sectorList.begin(); iter != iterE; ++iter)
+		{
+			if ((*iter) == pCharacter)
+			{
+				continue;
+			}
+
+			if (pCharacter->direction == eKeyList::eACTION_MOVE_RR)
+			{
+				rangeX = (*iter)->posX - pCharacter->posX;
+				rangeY = (*iter)->posY - pCharacter->posY;
+			}
+			else
+			{
+				rangeX = pCharacter->posX - (*iter)->posX;
+				rangeY = pCharacter->posY - (*iter)->posY;
+			}
+
+			if (rangeX < 0 || rangeY < 0)
+			{
+				continue;
+			}
+
+			if (rangeX < dfATTACK2_RANGE_X && rangeY < dfATTACK2_RANGE_Y)
+			{
+				*pVictimCharacter = (*iter);
+
+				if ((*pVictimCharacter)->hp - 7 > 0)
+				{
+					(*pVictimCharacter)->hp -= 7;
+				}
+				else
+				{
+					(*pVictimCharacter)->hp = 0;
+				}
+
+				return;
+			}
+		}
+	}
+
+	pVictimCharacter = nullptr;
+}
+
+void Attack3ColisionCheck(stCharacter* pCharacter, stCharacter** pVictimCharacter)
+{
+	stSectorAround sectorAround;
+
+	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &sectorAround);
+
+	short rangeX;
+	short rangeY;
+
+	for (int count = 0; count < sectorAround.count; ++count)
+	{
+		auto sectorList = gSector[sectorAround.around[count].posY][sectorAround.around[count].posX];
+
+		auto iterE = sectorList.end();
+
+		for (auto iter = sectorList.begin(); iter != iterE; ++iter)
+		{
+			if ((*iter) == pCharacter)
+			{
+				continue;
+			}
+
+			if (pCharacter->direction == eKeyList::eACTION_MOVE_RR)
+			{
+				rangeX = (*iter)->posX - pCharacter->posX;
+				rangeY = (*iter)->posY - pCharacter->posY;
+			}
+			else
+			{
+				rangeX = pCharacter->posX - (*iter)->posX;
+				rangeY = pCharacter->posY - (*iter)->posY;
+			}
+
+			if (rangeX < 0 || rangeY < 0)
+			{
+				continue;
+			}
+
+			if (rangeX < dfATTACK3_RANGE_X && rangeY < dfATTACK3_RANGE_Y)
+			{
+				*pVictimCharacter = (*iter);
+
+				if ((*pVictimCharacter)->hp - 10 > 0)
+				{
+					(*pVictimCharacter)->hp -= 10;
+				}
+				else
+				{
+					(*pVictimCharacter)->hp = 0;
+				}
+
+				return;
+			}
+		}
+	}
+
+	pVictimCharacter = nullptr;
+}

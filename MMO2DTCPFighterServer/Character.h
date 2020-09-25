@@ -29,5 +29,10 @@ void DeleteCharacter(stSession* pSession);
 
 bool CheckCharacterMove(short posX, short posY);
 
-
 void CleanUpCharacter(void);
+
+void Attack1ColisionCheck(stCharacter *pCharacter,stCharacter **pVictimCharacter);
+
+void Attack2ColisionCheck(stCharacter* pCharacter, stCharacter** pVictimCharacter);
+
+void Attack3ColisionCheck(stCharacter* pCharacter, stCharacter** pVictimCharacter);

@@ -36,9 +36,7 @@ void SetupNetwork(void);
 
 void CleanUpSession(void);
 
-void CleanUpNetwork(void);
-
-
+void CleanUpNetwork(void); 
 
 
 void NetworkProcessing(void);
@@ -69,6 +67,7 @@ bool Attack2MessageProcessing(stSession* pSession, CMessage* pMessage);
 bool Attack3MessageProcessing(stSession* pSession, CMessage* pMessage);
 
 
+
 void PackingCreateCharacter(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY, BYTE hp);
 
 void PackingDeleteCharacter(CMessage* pMessage, DWORD sessionID);
@@ -82,8 +81,28 @@ void PackingMoveStop(CMessage* pMessage, DWORD sessionID, BYTE moveDirection, sh
 void PackingSynPosition(CMessage* pMessage, DWORD sessionID, short posX, short posY);
 
 
+void PackingAttack1(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY);
+
+void PackingAttack2(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY);
+
+void PackingAttack3(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY);
+
+
+void PackingDamage(CMessage* pMessage, DWORD sessionID, DWORD victimSessionID, BYTE damegeHp);
+
+
+// stSession의 sendQ에 인큐를 한다. 
 void SendProcUnicasting(stSession* pSession, CMessage* pMessage);
 
+
+// 섹터에 있는 Client들에게 sendQ 인큐를 한다.
 void SendProcOneSector(int sectorPosX, int sectorPosY, stSession* pExceptSession, CMessage* pMessage);
 
+
+// pSession 영향권 섹터들한테 snedQ 인큐를 한다.
+// sendMeFlag가 true일 경우 pSession에게도 sendQ에 인큐하는데, 싱크 메시지에서 true를 사용한다.
 void SendProcAroundSector(stSession* pSession, CMessage* pMessage, bool sendMeFlag = false);
+
+
+// 공격시에만 영향권을 ( 4 X 4 )로 하여 영향권 클라이언트들에게 sendQ에 인큐한다. 
+void SendProcAttackAroundSector(stSession* pSession, CMessage* pMessage, bool sendMeFlag = false);

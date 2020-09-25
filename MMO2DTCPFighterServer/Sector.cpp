@@ -85,6 +85,39 @@ void GetSectorAround(int sectorPosX, int sectorPosY, stSectorAround* pSectorArou
 	}
 }
 
+void GetAttackSectorAround(stCharacter* pCharacter, stAttackSectorAround* pAttackSectorAround)
+{
+	pAttackSectorAround->count = 0;
+
+	int sectorPosX = pCharacter->curSector.posX;
+	int sectorPosY = pCharacter->curSector.posY;
+
+	sectorPosX -= 1;
+	sectorPosY -= 2;
+
+	for (int countY = 0; countY < 4; ++countY)
+	{
+		if (sectorPosY + countY < 0 || sectorPosY + countY >= dfSECTOR_MAX_Y)
+		{
+			continue;
+		}
+
+
+		for (int countX = 0; countX < 4; ++countX)
+		{
+			if (sectorPosX + countX < 0 || sectorPosX + countX >= dfSECTOR_MAX_X)
+			{
+				continue;
+			}
+
+			pAttackSectorAround->around[pAttackSectorAround->count].posY = sectorPosY + countY;
+			pAttackSectorAround->around[pAttackSectorAround->count].posX = sectorPosX + countX;
+			++pAttackSectorAround->count;
+		}
+	}
+}
+
+
 
 void UpdateSectorAround(stCharacter* pCharacter, stSectorAround* pRemoveAroundSector, stSectorAround* pAddAroundSector)
 {
@@ -96,9 +129,6 @@ void UpdateSectorAround(stCharacter* pCharacter, stSectorAround* pRemoveAroundSe
 	stSectorAround oldSectorAround;
 	stSectorAround curSectorAround;
 
-	oldSectorAround.count = 0;
-	curSectorAround.count = 0;
-
 	GetSectorAround(pCharacter->oldSector.posX, pCharacter->oldSector.posY, &oldSectorAround);
 	GetSectorAround(pCharacter->curSector.posX, pCharacter->curSector.posY, &curSectorAround);
 
@@ -109,6 +139,10 @@ void UpdateSectorAround(stCharacter* pCharacter, stSectorAround* pRemoveAroundSe
 	
 		for (int curCount = 0; curCount < curSectorAround.count; ++curCount)
 		{
+
+			// oldSectorAround.around[oldCount] 와 curSectorAround.around[curCount]가 좌표가 같다면 
+			// 삭제 섹터가 아니라 유지해야 될 섹터이다. findFlag = true로 하여 pRemoveAroundSector에 
+			// oldSectorAround.around[oldCount] 가 추가되지 않도록 한다.
 			if (oldSectorAround.around[oldCount].posX == curSectorAround.around[curCount].posX &&
 				oldSectorAround.around[oldCount].posY == curSectorAround.around[curCount].posY)
 			{
@@ -133,6 +167,9 @@ void UpdateSectorAround(stCharacter* pCharacter, stSectorAround* pRemoveAroundSe
 
 		for (int oldCount = 0; oldCount < oldSectorAround.count; ++oldCount)
 		{
+			// curSectorAround.around[curCount] 와 oldSectorAround.around[oldCount]가 좌표가 같다면
+			// 새로 추가된 섹터가 아니기 때문에 findFlag = true로 하여 pAddAroundSector 에 curSectorAround.around[curCount]
+			// 값을 추가되지 않도록 한다.
 			if (curSectorAround.around[curCount].posX == oldSectorAround.around[oldCount].posX &&
 				curSectorAround.around[curCount].posY == oldSectorAround.around[oldCount].posY)
 			{
@@ -273,5 +310,4 @@ void SendUpdateCharacterSector(stCharacter* pCharacter)
 			}
 		}
 	}
-
 }
