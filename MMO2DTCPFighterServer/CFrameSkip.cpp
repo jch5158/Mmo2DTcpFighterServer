@@ -7,9 +7,9 @@ CFrameSkip gFrame;
 
 CFrameSkip::CFrameSkip()
 {	
-	mAvgFrameTime = 0;
-	mMinFrameTime = 0;
-	mMaxFrameTime = 0;
+	mAvgDeltaTime = 0;
+	mMinDeltaTime = UINT_MAX;
+	mMaxDeltaTime = 0;
 	mFrameCount = 0;
 
 	mOneSecFrame = 0;
@@ -31,13 +31,14 @@ bool CFrameSkip::FrameSkip()
 
 	static DWORD timeCheck = timeGetTime();
 
+	
 	DWORD nowTime = timeGetTime();
 
-	int frameTime = nowTime - oldTime;
+	int deltaTime = nowTime - oldTime;
 
-	mSupplementTime += frameTime;
+	mSupplementTime += deltaTime;
 
-	getFrameAvrage(frameTime);
+	getFrameAvrage(deltaTime);
 
 	oldTime = nowTime;
 
@@ -52,16 +53,16 @@ bool CFrameSkip::FrameSkip()
 			// mFrameCheck 가 25가 아닐경우는 프레임이 틀어져서 Sync가 발생할 확률이 높다.
 			if (mOneSecFrame == 25)
 			{
-				_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"frame : %d, avgFrameTime : %f, maxFrameTime : %d, minFrameTime :%d \n", mOneSecFrame, (double)((double)mAvgFrameTime / (double)mFrameCount), mMaxFrameTime, mMinFrameTime);
+			//	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"frame : %d, avgDeltaTime : %f, maxDeltaTime : %d, minDeltaTime :%d \n", mOneSecFrame, (double)((double)mAvgDeltaTime / (double)mFrameCount), mMaxDeltaTime, mMinDeltaTime);
 			}
 			else 
 			{
-			    _LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"frame : %d, avgFrameTime : %f, maxFrameTime : %d, minFrameTime :%d \n", mOneSecFrame, (double)((double)mAvgFrameTime / (double)mFrameCount), mMaxFrameTime, mMinFrameTime);
+			    _LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"frame : %d, avgDeltaTime : %f, maxDeltaTime : %d, minDeltaTime :%d \n", mOneSecFrame, (double)((double)mAvgDeltaTime / (double)mFrameCount), mMaxDeltaTime, mMinDeltaTime);
 			}
 
-			mAvgFrameTime = 0;
-			mMaxFrameTime = 0;
-			mMinFrameTime = 0;
+			mAvgDeltaTime = 0;
+			mMaxDeltaTime = 0;
+			mMinDeltaTime = UINT_MAX;
 			mFrameCount = 0;
 
 			mOneSecFrame = 0;
@@ -78,16 +79,16 @@ bool CFrameSkip::FrameSkip()
 
 void CFrameSkip::getFrameAvrage(DWORD frame)
 {
-	if (mMaxFrameTime < frame)
+	if (mMaxDeltaTime < frame)
 	{
-		mMaxFrameTime = frame;
+		mMaxDeltaTime = frame;
 	}
-	else if (mMinFrameTime > frame)
+	else if (mMinDeltaTime > frame)
 	{
-		mMinFrameTime = frame;
+		mMinDeltaTime = frame;
 	}
 
 	mFrameCount += 1;
 
-	mAvgFrameTime += frame;
+	mAvgDeltaTime += frame;
 }

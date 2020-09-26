@@ -11,9 +11,39 @@ std::list<stCharacter*> gSector[dfSECTOR_MAX_Y][dfSECTOR_MAX_X];
 
 void SetSectorPosition(stCharacter* pCharacter, stSectorPos* pSectorPos)
 {
-	pSectorPos->posX = pCharacter->posX / (dfRANGE_MOVE_RIGHT / dfSECTOR_MAX_X);
+	int posX;
 
-	pSectorPos->posY = pCharacter->posY / (dfRANGE_MOVE_BOTTOM / dfSECTOR_MAX_Y);			
+	int posY;
+
+	if (pCharacter->posX < 0)
+	{
+		posX = 0;
+	}
+	else if (pCharacter->posY > 6400)
+	{
+		posX = 6400;
+	}
+	else
+	{
+		posX = pCharacter->posX;
+	}
+
+	if (pCharacter->posY < 0)
+	{
+		posY = 0;
+	}
+	else if (pCharacter->posY > 6400)
+	{
+		posY = 6400;
+	}
+	else
+	{
+		posY = pCharacter->posY;
+	}
+
+	pSectorPos->posX = posX / (dfRANGE_MOVE_RIGHT / dfSECTOR_MAX_X);
+
+	pSectorPos->posY = posY / (dfRANGE_MOVE_BOTTOM / dfSECTOR_MAX_Y);			
 }
 
 

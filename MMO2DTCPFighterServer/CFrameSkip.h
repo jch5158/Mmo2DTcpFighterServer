@@ -13,9 +13,9 @@ private:
 
 	void getFrameAvrage(DWORD frame);
 
-	DWORD mAvgFrameTime;
-	DWORD mMinFrameTime;
-	DWORD mMaxFrameTime;
+	DWORD mAvgDeltaTime;
+	DWORD mMaxDeltaTime;
+	DWORD mMinDeltaTime;
 	DWORD mFrameCount;
 
 	// 1초 당 프레임 체크

@@ -306,7 +306,7 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 {
 	int retval;
 
-	bool disconnectFlag;
+	bool unDisconnectFlag;
 
 	// select의 block을 없애기 위해 타임아웃값 0으로 셋팅
 	timeval timeout;
@@ -320,7 +320,7 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 		// retval은 반응온 소켓의 수로 SendEvent, Accept, RecvEvent 호출 시 마다 retval 을 1씩 감소시킨다.
 		for (int count = 0; retval > 0 && count < FD_SETSIZE; ++count)
 		{
-			disconnectFlag = false;
+			unDisconnectFlag = true;
 
 			if (FD_ISSET(pSocketTable[count], pWriteSet))
 			{	
@@ -328,13 +328,13 @@ void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 
 				// SendEvent의 return 값이 true일 경우 이번 소켓은 끊어졌다고 판단한다.
 				// 그러면 아래의 RecvEvent는 반응이 온것과 상관없이 실행하지 않는다.
-				disconnectFlag = SendEvent(pSocketTable[count]);
+				unDisconnectFlag = SendEvent(pSocketTable[count]);
 			}
 
 			if (FD_ISSET(pSocketTable[count], pReadSet))
 			{
 				--retval;
-				if (!disconnectFlag)
+				if (unDisconnectFlag)
 				{
 					if (pSocketTable[count] == gListenSocket)
 					{
@@ -381,11 +381,11 @@ void Accept(void)
 
 	gSessionMap.insert(std::pair<SOCKET, stSession*>(clientSocket, pSession));
 	
-	/*short posX = (rand() % 6000) + 200;
-	short posY = (rand() % 6000) + 200;*/
+	short posX = (rand() % 6000) + 200;
+	short posY = (rand() % 6000) + 200;
 
-	short posX = 500;
-	short posY = 500;
+	//short posX = 500;
+	//short posY = 500;
 
 	stCharacter* pCharacter = CreateCharacter(pSession, eKeyList::eACTION_STAND, eKeyList::eACTION_MOVE_RR, eKeyList::eACTION_STAND, posX, posY);
 	if (pCharacter == nullptr)
@@ -438,7 +438,7 @@ void Accept(void)
 		}
 	}	
 
-	_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"Accept 완료 sessionID : %d\n", pSession->sessionID);
+	_LOG(FALSE, eLogList::LOG_LEVEL_ERROR, L"Accept 완료 sessionID : %d\n", pSession->sessionID);
 
 
 	return;
@@ -516,8 +516,6 @@ bool SendEvent(SOCKET socket)
 
 		int* ptr = nullptr;
 		*ptr = -1;
-
-		return false;
 	}
 
 	int directBufferSize = pSession->sendQ.DirectDequeueSize();
@@ -666,6 +664,12 @@ bool RecvMessageProcessing(stSession* pSession, BYTE messageType, CMessage* pMes
 		return Attack3MessageProcessing(pSession, pMessage);
 
 		break;
+
+	case dfPACKET_CS_ECHO:
+
+		return EchoMessageProcessing(pSession, pMessage);
+
+		break;
 	default:
 
 		_LOG(TRUE,eLogList::LOG_LEVEL_ERROR, L"unknown type, type : %d, Session ID : %d\n", messageType, pSession->sessionID);
@@ -684,7 +688,7 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 	BYTE moveDirection;
 	short posX;
 	short posY;
-	
+
 	*pMessage >> moveDirection;
 	*pMessage >> posX;
 	*pMessage >> posY;
@@ -706,14 +710,14 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 
 	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
 	{
-		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
-			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Start Sync# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d, ClientMoveDir : %d\n",
+			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY, moveDirection
 		);
 
 		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
 
 		SendProcAroundSector(pSession, pMessage, true);
-		
+
 		posX = pCharacter->posX;
 		posY = pCharacter->posY;
 	}
@@ -750,7 +754,7 @@ bool MoveStartMessageProcessing(stSession* pSession, CMessage* pMessage)
 	if (UpdateSectorPosition(pCharacter))
 	{
 		// 섹터가 바뀌었다면은 SendUpdateCharacterSector로 브로드캐스팅
-		SendUpdateCharacterSector(pCharacter);		
+		SendUpdateCharacterSector(pCharacter);
 	}
 	else
 	{
@@ -792,8 +796,8 @@ bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 
 	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
 	{
-		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Sync Packet# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
-			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
+		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Stop Sync# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d, ClientMoveDir : %d\n",
+			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY, moveDirection
 		);
 
 		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
@@ -813,7 +817,6 @@ bool MoveStopMessageProcessing(stSession* pSession, CMessage* pMessage)
 	{
 		// 섹터가 바뀌었다면은 SendUpdateCharacterSector로 브로드캐스팅
 		SendUpdateCharacterSector(pCharacter);
-
 	}
 
 	PackingMoveStop(pMessage, pCharacter->sessionID, pCharacter->direction, pCharacter->posX, pCharacter->posY);
@@ -842,38 +845,42 @@ bool Attack1MessageProcessing(stSession* pSession, CMessage* pMessage)
 
 	_LOG(FALSE,eLogList::LOG_LEVEL_DEBUG,L"#Attack1Processing# ClientDir : %d, ClientX : %d, ClientY : %d, serverX : %d, serverY : %d\n",direction,posX,posY,pCharacter->posX,pCharacter->posY);
 
-	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
-	{
-		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack1MessageProcessing# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
-			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
-		);
+	//if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
+	//{
+	//	_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack1 Sync# SessionID : %d ServerX : %d, ServerY : %d, ServerDir : %d, ClientX : %d, ClientY : %d, ClientDir : %d\n",
+	//		pCharacter->sessionID, pCharacter->posX, pCharacter->direction,pCharacter->posY, posX, posY,direction
+	//	);
 
-		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
+	//	PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
 
-		SendProcAroundSector(pSession, pMessage, true);
+	//	SendProcAroundSector(pSession, pMessage, true);
 
-		posX = pCharacter->posX;
-		posY = pCharacter->posY;
-	}
+	//	posX = pCharacter->posX;
+	//	posY = pCharacter->posY;
+	//}
 
-	pCharacter->posX = posX;
-	pCharacter->posY = posY;
+	//pCharacter->posX = posX;
+	//pCharacter->posY = posY;
 	pCharacter->direction = direction;
-	pCharacter->action = eKeyList::eACTION_STAND;
+	pCharacter->action = eKeyList::eACTION_ATTACK1;
 
-	CMessage message;
+	//if (UpdateSectorPosition(pCharacter))
+	//{
+	//	// 섹터가 바뀌었다면은 SendUpdateCharacterSector로 브로드캐스팅
+	//	SendUpdateCharacterSector(pCharacter);
+	//}
 
-	PackingAttack1(&message, pSession->sessionID, direction, posX, posY);
+	PackingAttack1(pMessage, pSession->sessionID, direction, posX, posY);
 
-	SendProcAttackAroundSector(pSession, &message);
+	SendProcAttackAroundSector(pSession, pMessage);
 
 	stCharacter *victimCharacter = nullptr;
 	Attack1ColisionCheck(pCharacter, &victimCharacter);
 	if (victimCharacter != nullptr)
 	{
-		PackingDamage(&message, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
+		PackingDamage(pMessage, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
 
-		SendProcAttackAroundSector(pSession, &message, true);
+		SendProcAttackAroundSector(pSession, pMessage, true);
 	}
 
 
@@ -899,38 +906,43 @@ bool Attack2MessageProcessing(stSession* pSession, CMessage* pMessage)
 
 	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"#Attack2Processing# ClientDir : %d, ClientX : %d, ClientY : %d, serverX : %d, serverY : %d\n", direction, posX, posY, pCharacter->posX, pCharacter->posY);
 
-	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
-	{
-		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack2MessageProcessing# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
-			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
-		);
+	//if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
+	//{
+	//	_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack2 Sync# SessionID : %d ServerX : %d, ServerY : %d, ServerDir : %d, ClientX : %d, ClientY : %d, ClientDir : %d\n",
+	//		pCharacter->sessionID, pCharacter->posX, pCharacter->direction, pCharacter->posY, posX, posY, direction
+	//	);
 
-		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
+	//	PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
 
-		SendProcAroundSector(pSession, pMessage, true);
+	//	SendProcAroundSector(pSession, pMessage, true);
 
-		posX = pCharacter->posX;
-		posY = pCharacter->posY;
-	}
+	//	posX = pCharacter->posX;
+	//	posY = pCharacter->posY;
+	//}
 
-	pCharacter->posX = posX;
-	pCharacter->posY = posY;
+	//pCharacter->posX = posX;
+	//pCharacter->posY = posY;
 	pCharacter->direction = direction;
-	pCharacter->action = eKeyList::eACTION_STAND;
+	pCharacter->action = eKeyList::eACTION_ATTACK2;
 
-	CMessage message;
+	//if (UpdateSectorPosition(pCharacter))
+	//{
+	//	// 섹터가 바뀌었다면은 SendUpdateCharacterSector로 브로드캐스팅
+	//	SendUpdateCharacterSector(pCharacter);
+	//}
 
-	PackingAttack2(&message, pSession->sessionID, direction, posX, posY);
+	
+	PackingAttack2(pMessage, pSession->sessionID, direction, posX, posY);
 
-	SendProcAttackAroundSector(pSession, &message);
+	SendProcAttackAroundSector(pSession, pMessage);
 
 	stCharacter* victimCharacter = nullptr;
 	Attack2ColisionCheck(pCharacter, &victimCharacter);
 	if (victimCharacter != nullptr)
 	{
-		PackingDamage(&message, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
+		PackingDamage(pMessage, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
 
-		SendProcAttackAroundSector(pSession, &message, true);
+		SendProcAttackAroundSector(pSession, pMessage, true);
 	}
 
 	return true;
@@ -955,39 +967,57 @@ bool Attack3MessageProcessing(stSession* pSession, CMessage* pMessage)
 
 	_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"#Attack3Processing# ClientDir : %d, ClientX : %d, ClientY : %d, serverX : %d, serverY : %d\n", direction, posX, posY, pCharacter->posX, pCharacter->posY);
 
-	if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
-	{
-		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack3MessageProcessing# SessionID : %d ServerX : %d, ServerY : %d, ClientX : %d, ClientY : %d\n",
-			pCharacter->sessionID, pCharacter->posX, pCharacter->posY, posX, posY
-		);
+	//if (abs(pCharacter->posX - posX) > dfERROR_RANGE || abs(pCharacter->posY - posY) > dfERROR_RANGE)
+	//{
+	//	_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"#Attack3 Sync# SessionID : %d ServerX : %d, ServerY : %d, ServerDir : %d, ClientX : %d, ClientY : %d, ClientDir : %d\n",
+	//		pCharacter->sessionID, pCharacter->posX, pCharacter->direction, pCharacter->posY, posX, posY, direction
+	//	);
 
-		PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
+	//	PackingSynPosition(pMessage, pCharacter->sessionID, pCharacter->posX, pCharacter->posY);
 
-		SendProcAroundSector(pSession, pMessage, true);
+	//	SendProcAroundSector(pSession, pMessage, true);
 
-		posX = pCharacter->posX;
-		posY = pCharacter->posY;
-	}
+	//	posX = pCharacter->posX;
+	//	posY = pCharacter->posY;
+	//}
 
-	pCharacter->posX = posX;
-	pCharacter->posY = posY;
+	//pCharacter->posX = posX;
+	//pCharacter->posY = posY;
 	pCharacter->direction = direction;
-	pCharacter->action = eKeyList::eACTION_STAND;
+	pCharacter->action = eKeyList::eACTION_ATTACK3;
 
-	CMessage message;
+	//if (UpdateSectorPosition(pCharacter))
+	//{
+	//	// 섹터가 바뀌었다면은 SendUpdateCharacterSector로 브로드캐스팅
+	//	SendUpdateCharacterSector(pCharacter);
+	//}
+	
+	PackingAttack3(pMessage, pSession->sessionID, direction, posX, posY);
 
-	PackingAttack3(&message, pSession->sessionID, direction, posX, posY);
-
-	SendProcAttackAroundSector(pSession, &message);
+	SendProcAttackAroundSector(pSession, pMessage);
 
 	stCharacter* victimCharacter = nullptr;
 	Attack3ColisionCheck(pCharacter, &victimCharacter);
 	if (victimCharacter != nullptr)
 	{
-		PackingDamage(&message, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
+		PackingDamage(pMessage, pSession->sessionID, victimCharacter->sessionID, victimCharacter->hp);
 
-		SendProcAttackAroundSector(pSession, &message, true);
+		SendProcAttackAroundSector(pSession, pMessage, true);
 	}
+
+	return true;
+}
+
+
+bool EchoMessageProcessing(stSession* pSession, CMessage* pMessage)
+{	
+	unsigned int recvTime;
+
+	*pMessage >> recvTime;
+
+	PackingEcho(pMessage, recvTime);
+
+	SendProcUnicasting(pSession, pMessage);
 
 	return true;
 }
@@ -1152,6 +1182,22 @@ void PackingDamage(CMessage* pMessage, DWORD sessionID, DWORD victimSessionID, B
 	pMessage->MoveWritePos(sizeof(stHeader));
 
 	*pMessage << (unsigned int)sessionID << (unsigned int)victimSessionID << (unsigned char)damegeHp;
+}
+
+void PackingEcho(CMessage* pMessage, unsigned int recvTime)
+{
+	stHeader messageHeader;
+	messageHeader.byCode = dfNETWORK_PACKET_CODE;
+	messageHeader.bySize = sizeof(unsigned int);
+	messageHeader.byType = dfPACKET_SC_ECHO;
+
+	pMessage->Clear();
+
+	pMessage->PutData((char*)&messageHeader, sizeof(stHeader));
+	pMessage->MoveWritePos(sizeof(stHeader));
+
+
+	*pMessage << recvTime;
 }
 
 // pSession의 send 링 버퍼에 인큐

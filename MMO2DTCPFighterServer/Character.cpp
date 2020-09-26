@@ -89,7 +89,7 @@ void DeleteCharacter(stSession* pSession)
 
 bool CheckCharacterMove(short posX, short posY)
 {
-	if (dfRANGE_MOVE_RIGHT > posX && dfRANGE_MOVE_LEFT < posX && dfRANGE_MOVE_TOP < posY && dfRANGE_MOVE_BOTTOM  > posY)
+	if (dfRANGE_MOVE_RIGHT > posX && dfRANGE_MOVE_LEFT <= posX && dfRANGE_MOVE_TOP <= posY && dfRANGE_MOVE_BOTTOM  > posY)
 	{
 		return true;
 	}

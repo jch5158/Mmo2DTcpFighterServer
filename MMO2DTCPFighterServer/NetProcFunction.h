@@ -66,6 +66,7 @@ bool Attack2MessageProcessing(stSession* pSession, CMessage* pMessage);
 
 bool Attack3MessageProcessing(stSession* pSession, CMessage* pMessage);
 
+bool EchoMessageProcessing(stSession* pSession, CMessage* pMessage);
 
 
 void PackingCreateCharacter(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY, BYTE hp);
@@ -87,8 +88,10 @@ void PackingAttack2(CMessage* pMessage, DWORD sessionID, BYTE direction, short p
 
 void PackingAttack3(CMessage* pMessage, DWORD sessionID, BYTE direction, short posX, short posY);
 
-
 void PackingDamage(CMessage* pMessage, DWORD sessionID, DWORD victimSessionID, BYTE damegeHp);
+
+
+void PackingEcho(CMessage* pMessage, unsigned int recvTime);
 
 
 // stSession의 sendQ에 인큐를 한다. 
