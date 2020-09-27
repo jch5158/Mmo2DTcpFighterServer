@@ -56,6 +56,7 @@
 #include <locale.h>
 #include <time.h>
 #include <unordered_map>
+#include <map>
 #include <list>
 
 enum eKeyList

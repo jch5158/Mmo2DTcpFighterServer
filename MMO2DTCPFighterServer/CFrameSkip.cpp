@@ -31,14 +31,11 @@ bool CFrameSkip::FrameSkip()
 
 	static DWORD timeCheck = timeGetTime();
 
+	static DWORD deltaTimeCheck = timeGetTime();
 	
 	DWORD nowTime = timeGetTime();
-
-	int deltaTime = nowTime - oldTime;
-
-	mSupplementTime += deltaTime;
-
-	getFrameAvrage(deltaTime);
+	
+	mSupplementTime += nowTime - oldTime;
 
 	oldTime = nowTime;
 
@@ -47,6 +44,10 @@ bool CFrameSkip::FrameSkip()
 		mSupplementTime -= mMaxFPS;
 
 		mOneSecFrame += 1;
+
+		getFrameAvrage(nowTime - deltaTimeCheck);
+
+		deltaTimeCheck = timeGetTime();
 
 		if (nowTime - timeCheck >= 1000)
 		{

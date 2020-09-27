@@ -16,7 +16,7 @@ extern SOCKET gListenSocket;
 
 extern std::unordered_map<SOCKET, stSession*> gSessionMap;
 
-extern std::list<stSession*> gClearSessionList;
+extern std::map<SOCKET, stSession*> gClearSessionMap;
 
 
 // Socket 으로 세션 찾기.
@@ -28,9 +28,13 @@ stSession* CreateSession(SOCKET socket);
 void DisconnectSession(SOCKET socket);
 
 // DisconnectSession(), DeleteCharacter() 함수 랩핑
-void DeleteClient(SOCKET socket);
+void DeleteClient(stSession *pSession);
 
-void ClearSessionList(void);
+
+
+void CheckClearSessionMap(void);
+
+
 
 void SetupNetwork(void);
 

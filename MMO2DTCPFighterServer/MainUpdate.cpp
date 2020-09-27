@@ -29,8 +29,8 @@ void Update()
 
 		if (pCharecter->hp <= 0)
 		{		
-			gClearSessionList.push_back(pCharecter->pSession);
-		}
+			DeleteClient(pCharecter->pSession);
+			}
 		else
 		{
 			switch (pCharecter->action)
