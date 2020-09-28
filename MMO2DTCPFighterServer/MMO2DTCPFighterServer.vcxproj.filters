@@ -86,9 +86,6 @@
     <ClInclude Include="NetProcFunction.h">
       <Filter>NetworkFolder</Filter>
     </ClInclude>
-    <ClInclude Include="CRingBuffer.h">
-      <Filter>NetworkFolder</Filter>
-    </ClInclude>
     <ClInclude Include="ServerControl.h">
       <Filter>ServerManagementFolder</Filter>
     </ClInclude>
@@ -115,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="CFrameSkip.h">
       <Filter>UpdateFolder</Filter>
+    </ClInclude>
+    <ClInclude Include="CRingBuffer.h">
+      <Filter>SectorFolder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

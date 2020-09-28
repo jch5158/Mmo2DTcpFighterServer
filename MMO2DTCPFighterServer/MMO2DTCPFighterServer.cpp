@@ -13,7 +13,8 @@
 
 bool gShutdwonFlag = false;
 
-int main()
+
+int wmain()
 {
 
 	timeBeginPeriod(1);
@@ -33,7 +34,7 @@ int main()
 
 		Update();
 		
-		ServerControling();
+		ServerControling();	
 	}
 	
 	CleanUpAll();

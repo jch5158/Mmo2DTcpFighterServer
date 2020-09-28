@@ -19,7 +19,7 @@ struct stCharacter
 	char hp;
 };
 
-extern std::unordered_map<DWORD, stCharacter*> gCharacterMap;
+extern std::map<DWORD, stCharacter*> gCharacterMap;
 
 stCharacter* CreateCharacter(stSession* pSession, DWORD action, BYTE direction, BYTE moveDirection, short posX, short posY);
 

@@ -19,13 +19,13 @@ private:
 	DWORD mFrameCount;
 
 	// 1초 당 프레임 체크
-	DWORD mOneSecFrame;
+	int mOneSecFrame;
 
-	//20
-	DWORD mMaxFPS;
+	// 40
+	int mMaxFPS;
 
 	// 업데이트 지연될 때 마다 더해지는 멤버변수
-	DWORD mSupplementTime;
+	int mSupplementTime;
 };
 
 

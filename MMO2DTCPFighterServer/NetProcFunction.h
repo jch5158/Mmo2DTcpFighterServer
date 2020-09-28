@@ -1,6 +1,9 @@
 #pragma once
 
-#define SERVER_PORT 20000
+
+
+
+#define SERVER_PORT 10999
 #define SERVER_IP L"0.0.0.0"
 
 struct stSession
@@ -14,7 +17,7 @@ struct stSession
 
 extern SOCKET gListenSocket;
 
-extern std::unordered_map<SOCKET, stSession*> gSessionMap;
+extern std::map<SOCKET, stSession*> gSessionMap;
 
 extern std::map<SOCKET, stSession*> gClearSessionMap;
 

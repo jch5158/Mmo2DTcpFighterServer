@@ -8,7 +8,7 @@
 #include "Sector.h"
 #include "Character.h"
 
-std::unordered_map<DWORD, stCharacter*> gCharacterMap;
+std::map<DWORD, stCharacter*> gCharacterMap;
 
 stCharacter* CreateCharacter(stSession* pSession, DWORD action, BYTE direction, BYTE moveDirection, short posX, short posY)
 {
@@ -104,13 +104,13 @@ void CleanUpCharacter(void)
 
 	for (auto iter = gCharacterMap.begin(); iter != iterE;)
 	{
-		auto deleteIter = iter;
+		stCharacter* pCharacter = (*iter).second;
 
-		++iter;
+		iter = gCharacterMap.erase(iter);
 
-		RemoveSectorPosition((*deleteIter).second);
+		RemoveSectorPosition(pCharacter);
 
-		gCharacterMap.erase((*deleteIter).second->sessionID);
+		free(pCharacter);
 	}
 }
 
@@ -140,12 +140,12 @@ void Attack1ColisionCheck(stCharacter* pCharacter, stCharacter** pVictimCharacte
 			if (pCharacter->direction == eKeyList::eACTION_MOVE_RR)
 			{
 				rangeX = (*iter)->posX - pCharacter->posX;
-				rangeY = (*iter)->posY - pCharacter->posY;
+				rangeY = abs((*iter)->posY - pCharacter->posY);
 			}
 			else
 			{
 				rangeX = pCharacter->posX - (*iter)->posX;
-				rangeY = pCharacter->posY - (*iter)->posY;
+				rangeY = abs(pCharacter->posY - (*iter)->posY);
 			}
 
 			if (rangeX < 0 || rangeY < 0)
@@ -200,12 +200,12 @@ void Attack2ColisionCheck(stCharacter* pCharacter, stCharacter** pVictimCharacte
 			if (pCharacter->direction == eKeyList::eACTION_MOVE_RR)
 			{
 				rangeX = (*iter)->posX - pCharacter->posX;
-				rangeY = (*iter)->posY - pCharacter->posY;
+				rangeY = abs((*iter)->posY - pCharacter->posY);
 			}
 			else
 			{
 				rangeX = pCharacter->posX - (*iter)->posX;
-				rangeY = pCharacter->posY - (*iter)->posY;
+				rangeY = abs(pCharacter->posY - (*iter)->posY);
 			}
 
 			if (rangeX < 0 || rangeY < 0)
@@ -259,12 +259,12 @@ void Attack3ColisionCheck(stCharacter* pCharacter, stCharacter** pVictimCharacte
 			if (pCharacter->direction == eKeyList::eACTION_MOVE_RR)
 			{
 				rangeX = (*iter)->posX - pCharacter->posX;
-				rangeY = (*iter)->posY - pCharacter->posY;
+				rangeY = abs((*iter)->posY - pCharacter->posY);
 			}
 			else
 			{
 				rangeX = pCharacter->posX - (*iter)->posX;
-				rangeY = pCharacter->posY - (*iter)->posY;
+				rangeY = abs(pCharacter->posY - (*iter)->posY);
 			}
 
 			if (rangeX < 0 || rangeY < 0)

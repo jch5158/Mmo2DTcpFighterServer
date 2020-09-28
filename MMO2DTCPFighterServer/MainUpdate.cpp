@@ -14,6 +14,8 @@
 void Update()
 {
 
+	updateCount += 1;
+
 	if (!gFrame.FrameSkip())
 	{
 		return;
@@ -27,12 +29,12 @@ void Update()
 		pCharecter = charecterIter->second;
 		++charecterIter;
 
-		if (pCharecter->hp <= 0)
+		/*if (pCharecter->hp <= 0)
 		{		
 			DeleteClient(pCharecter->pSession);
 			}
 		else
-		{
+		{*/
 			switch (pCharecter->action)
 			{
 			case eKeyList::eACTION_MOVE_LL:
@@ -122,6 +124,6 @@ void Update()
 				}			
 			}
 
-		}
+		//}
 	}
 }

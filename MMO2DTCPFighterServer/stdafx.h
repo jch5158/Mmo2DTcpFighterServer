@@ -1,5 +1,6 @@
 #pragma once
 
+
 //---------------------------------------------------------------
 // 캐릭터 이동범위
 //---------------------------------------------------------------
@@ -162,3 +163,11 @@ enum eSprite
 	eSHADOW,
 	eSPRITE_MAX
 };
+
+
+extern DWORD netProcCount;
+extern DWORD updateCount;
+extern DWORD selectCount;
+extern DWORD sendCount;
+extern DWORD recvCount;
+

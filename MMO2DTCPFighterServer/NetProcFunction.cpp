@@ -10,7 +10,7 @@
 
 SOCKET gListenSocket;
 
-std::unordered_map<SOCKET, stSession*> gSessionMap;
+std::map<SOCKET, stSession*> gSessionMap;
 
 std::map<SOCKET, stSession*> gClearSessionMap;
 
@@ -101,14 +101,14 @@ void CleanUpSession(void)
 	auto iterE = gSessionMap.end();
 
 	for (auto iter = gSessionMap.begin(); iter != iterE;)
-	{
-		auto deleteIter = iter;
-		++iter;
+	{	
+		stSession* pSession = (*iter).second;
 
-		gSessionMap.erase((*deleteIter).second->socket);
-		closesocket((*deleteIter).second->socket);
+		iter = gSessionMap.erase(iter);
+		
+		closesocket(pSession->socket);
 			
-		delete (*deleteIter).second;
+		delete pSession;
 	}
 }
 
@@ -194,6 +194,7 @@ void SetupNetwork(void)
 
 	}
 
+	// SOMAXCONN_HINT(65535) 이건 별로..
 	retval = listen(gListenSocket, SOMAXCONN);
 	if (retval == SOCKET_ERROR)
 	{	
@@ -231,6 +232,8 @@ void CheckClearSessionMap(void)
 
 void NetworkProcessing(void)
 {
+	netProcCount += 1;
+
 	// gClearSessionList에 있는 세션들을 다 정리한다.
 	CheckClearSessionMap();
 
@@ -302,6 +305,8 @@ void NetworkProcessing(void)
 
 void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 {
+	selectCount += 1;
+
 	int retval;
 
 	bool unDisconnectFlag;
@@ -446,6 +451,8 @@ void Accept(void)
 
 void RecvEvent(SOCKET socket)
 {
+	recvCount += 1;
+
 	int retval;
 
 	// session 을 찾지 못했다면 내 로직이 실수한거다.
@@ -504,6 +511,9 @@ void RecvEvent(SOCKET socket)
 
 bool SendEvent(SOCKET socket)
 {
+
+	sendCount += 1;
+
 	int retval;
 
 	stSession* pSession = FindSession(socket);
