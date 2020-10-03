@@ -232,7 +232,6 @@ void CheckClearSessionMap(void)
 
 void NetworkProcessing(void)
 {
-	netProcCount += 1;
 
 	// gClearSessionList에 있는 세션들을 다 정리한다.
 	CheckClearSessionMap();
@@ -305,7 +304,6 @@ void NetworkProcessing(void)
 
 void SelectSocket(SOCKET* pSocketTable, FD_SET* pWriteSet, FD_SET* pReadSet)
 {
-	selectCount += 1;
 
 	int retval;
 
@@ -451,8 +449,7 @@ void Accept(void)
 
 void RecvEvent(SOCKET socket)
 {
-	recvCount += 1;
-
+	
 	int retval;
 
 	// session 을 찾지 못했다면 내 로직이 실수한거다.
@@ -511,8 +508,6 @@ void RecvEvent(SOCKET socket)
 
 bool SendEvent(SOCKET socket)
 {
-
-	sendCount += 1;
 
 	int retval;
 

@@ -81,23 +81,12 @@ bool CFrameSkip::FrameSkip()
 		if (mOneSecFrame == 25)
 		{
 			_LOG(FALSE, eLogList::LOG_LEVEL_DEBUG, L"frame : %d, avgDeltaTime : %f, maxDeltaTime : %d, minDeltaTime :%d \n", mOneSecFrame, (double)((double)mAvgDeltaTime / (double)mFrameCount), mMaxDeltaTime, mMinDeltaTime);
-
-			//_LOG(TRUE, eLogList::LOG_LEVEL_DEBUG, L"# 25 NetProcCount : %d, UpdateCount : %d, SelectCount : %d, SendCount : %d, RecvCount : %d #\n", netProcCount, updateCount, selectCount, sendCount, recvCount);
 		}
 		else
 		{
 			_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"frame : %d, avgDeltaTime : %f, maxDeltaTime : %d, minDeltaTime :%d \n", mOneSecFrame, (double)((double)mAvgDeltaTime / (double)mFrameCount), mMaxDeltaTime, mMinDeltaTime);
-			//_LOG(TRUE, eLogList::LOG_LEVEL_DEBUG, L"#!25 NetProcCount : %d, UpdateCount : %d, SelectCount : %d, SendCount : %d, RecvCount : %d #\n", netProcCount, updateCount, selectCount, sendCount, recvCount);
 		}
-
-		/*
-		netProcCount = 0;
-		updateCount = 0;
-		selectCount = 0;
-		sendCount = 0;
-		recvCount = 0;
-		*/
-
+		
 		mAvgDeltaTime = 0;
 		mMaxDeltaTime = 0;
 		mMinDeltaTime = UINT_MAX;

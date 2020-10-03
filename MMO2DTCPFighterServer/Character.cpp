@@ -67,6 +67,10 @@ void DeleteCharacter(stSession* pSession)
 	{
 		_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"DeleteCharacter NotFound SessionID : %d", pSession->sessionID);
 		
+		int* ptr = nullptr;
+
+		*ptr = -1;
+
 		return;
 	}
 

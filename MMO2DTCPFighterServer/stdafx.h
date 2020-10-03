@@ -165,9 +165,3 @@ enum eSprite
 };
 
 
-extern DWORD netProcCount;
-extern DWORD updateCount;
-extern DWORD selectCount;
-extern DWORD sendCount;
-extern DWORD recvCount;
-

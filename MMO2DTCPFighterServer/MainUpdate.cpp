@@ -14,7 +14,6 @@
 void Update()
 {
 
-	updateCount += 1;
 
 	if (!gFrame.FrameSkip())
 	{

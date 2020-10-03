@@ -21,7 +21,7 @@ int wmain()
 
 	srand((unsigned)time(NULL));
 
-	setlocale(LC_ALL, "");
+	setlocale(LC_ALL, "korean");
 
 	SettingLogLevel();
 	
