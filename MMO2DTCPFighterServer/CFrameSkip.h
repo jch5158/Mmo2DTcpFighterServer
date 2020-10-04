@@ -1,5 +1,7 @@
 #pragma once
 
+#define TARGET_FRAME 25
+
 class CFrameSkip
 {
 public:
