@@ -114,7 +114,7 @@
       <Filter>UpdateFolder</Filter>
     </ClInclude>
     <ClInclude Include="CRingBuffer.h">
-      <Filter>SectorFolder</Filter>
+      <Filter>NetworkFolder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -122,7 +122,16 @@ void GetAttackSectorAround(stCharacter* pCharacter, stAttackSectorAround* pAttac
 	int sectorPosX = pCharacter->curSector.posX;
 	int sectorPosY = pCharacter->curSector.posY;
 
-	sectorPosX -= 1;
+	
+	if (pCharacter->direction == eKeyList::eACTION_MOVE_RR)
+	{
+		sectorPosX -= 1;
+	}
+	else
+	{
+		sectorPosX -= 2;
+	}
+	
 	sectorPosY -= 2;
 
 	for (int countY = 0; countY < 4; ++countY)
