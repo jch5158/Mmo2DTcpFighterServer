@@ -36,18 +36,18 @@ bool CFrameSkip::FrameSkip()
 	static bool rewardFlag = false;
 
 	bool returnFlag = false;
-	
+
 	DWORD nowTime = timeGetTime();
-	
-	mSupplementTime += (nowTime - oldTime);
+
+	mSupplementTime += (int)(nowTime - oldTime);
 
 	oldTime = nowTime;
-	
+
 	if (mSupplementTime >= mMaxFPS)
 	{
 		mSupplementTime -= mMaxFPS;
 
-		mOneSecFrame += 1;	
+		mOneSecFrame += 1;
 
 		getFrameAvrage(nowTime - deltaTimeCheck);
 
@@ -57,23 +57,22 @@ bool CFrameSkip::FrameSkip()
 	}
 
 	if (nowTime - timeCheck >= 1000)
-	{		
+	{
 		if (!rewardFlag)
 		{
 			if (mOneSecFrame > 25)
 			{
-				mSupplementTime = -((mOneSecFrame - 25) * mMaxFPS);
+				mSupplementTime += -((mOneSecFrame - 25) * mMaxFPS);
 				rewardFlag = true;
 			}
 			else if (mOneSecFrame < 25)
 			{
-				mSupplementTime = ((25 - mOneSecFrame) * mMaxFPS);
+				mSupplementTime += ((25 - mOneSecFrame) * mMaxFPS);
 				rewardFlag = true;
 			}
 		}
 		else
 		{
-			mSupplementTime = 0;
 			rewardFlag = false;
 		}
 
@@ -86,7 +85,7 @@ bool CFrameSkip::FrameSkip()
 		{
 			_LOG(TRUE, eLogList::LOG_LEVEL_ERROR, L"frame : %d, avgDeltaTime : %f, maxDeltaTime : %d, minDeltaTime :%d \n", mOneSecFrame, (double)((double)mAvgDeltaTime / (double)mFrameCount), mMaxDeltaTime, mMinDeltaTime);
 		}
-		
+
 		mAvgDeltaTime = 0;
 		mMaxDeltaTime = 0;
 		mMinDeltaTime = UINT_MAX;
